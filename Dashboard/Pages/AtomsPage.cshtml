@@ -1,0 +1,94 @@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@using System
+@using System.Collections.Generic
+@using Hangfire.Atoms
+@using Hangfire.Common
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
+@using Hangfire.Storage
+@inherits Hangfire.Dashboard.RazorPage
+@{
+    Layout = new LayoutPage("Atoms");
+
+    int from, perPage;
+
+    int.TryParse(Query("from"), out from);
+    int.TryParse(Query("count"), out perPage);
+
+    long count = 0;
+    List<string> atoms = null;
+    using (var connection = Storage.GetConnection())
+    {
+        if (connection is JobStorageConnection jsc)
+        {
+            count = jsc.GetListCount(Atom.JobListKey);
+            atoms = jsc.GetRangeFromList(Atom.JobListKey, from, from + perPage);
+        }
+    }
+
+    var pager = new Pager(from, perPage, count);
+
+    Func<string, Job> GetJobData = (string jobId) =>
+    {
+        using (var connection = Storage.GetConnection())
+        {
+            return connection.GetJobData(jobId).Job;
+        }
+    };
+}
+
+
+<div class="row">
+    <div class="col-md-3">
+        @Html.JobsSidebar()
+    </div>
+    <div class="col-md-9">
+        <h1 class="page-header">Atomic jobs</h1>
+
+        @if (pager.TotalPageCount == 0)
+        {
+            <div class="alert alert-info">
+                No atomic jobs were created
+            </div>
+        }
+        else
+        {
+            <div class="js-jobs-list">
+                <div class="btn-toolbar btn-toolbar-top">
+                    @Html.PerPageSelector(pager)
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th class="min-width">
+                                <input type="checkbox" class="js-jobs-list-select-all" />
+                            </th>
+                            <th class="min-width">@Strings.Common_Id</th>
+                            <th>@Strings.Common_Job</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var atom in atoms)
+                        {
+                            <tr class="js-jobs-list-row">
+                                <td>
+                                    <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@atom" />
+                                </td>
+                                <td>
+                                    @Html.JobIdLink(atom)
+                                </td>
+                                <th>@Html.JobNameLink(atom, GetJobData(atom))</th>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+
+                @Html.Paginator(pager)
+            </div>
+        }
+    </div>
+</div>

@@ -33,7 +33,7 @@ namespace Hangfire.Atoms.Builder
         {
             var jobId = _client.Create(Job.FromExpression(action), nextState);
             _createdSubAtoms.Add(jobId, nextState);
-            var finalizationJobId = _client.ContinueWith(jobId, () => Atom.OnSubAtomFinished(_name, _atomId, jobId, null), continuationOptions);
+            var finalizationJobId = _client.ContinueWith(jobId, () => Atom.OnSubatomFinished(_name, _atomId, jobId, null), continuationOptions);
             _createdUtilityJobs.Add(finalizationJobId);
 
             return finalizationJobId;
@@ -73,6 +73,15 @@ namespace Hangfire.Atoms.Builder
             try
             {
                 // CREATING
+                using (var connection = _jobStorage.GetConnection())
+                {
+                    using (var tr = connection.CreateWriteTransaction())
+                    {
+                        tr.InsertToList(Atom.JobListKey, _atomId);
+                        tr.Commit();
+                    }
+                }
+
                 _buildAtom(this);
 
                 // CREATED

@@ -1,4 +1,5 @@
 ﻿using Hangfire.Atoms.Dashboard;
+using Hangfire.Atoms.Dashboard.Pages;
 using Hangfire.Atoms.States;
 using Hangfire.Dashboard;
 
@@ -20,6 +21,8 @@ namespace Hangfire.Atoms
             JobHistoryRenderer.Register(AtomRunningState.StateName, AtomJobHistoryRenderer.Render);
 
             JobsSidebarMenu.Items.Add(AtomJobSidebar.RenderAtomJobMenu);
+            
+            DashboardRoutes.Routes.AddRazorPage("/jobs/atoms", x => new AtomsPage());
 
             return configuration;
         }
