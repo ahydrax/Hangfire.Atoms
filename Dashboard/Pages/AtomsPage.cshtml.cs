@@ -95,16 +95,16 @@ WriteLiteral("\r\n");
 
     long count = 0;
     List<string> atoms = null;
+    Pager pager = null;
     using (var connection = Storage.GetConnection())
     {
         if (connection is JobStorageConnection jsc)
         {
             count = jsc.GetListCount(Atom.JobListKey);
-            atoms = jsc.GetRangeFromList(Atom.JobListKey, from, from + perPage);
+            pager = new Pager(from, perPage, count);
+            atoms = jsc.GetRangeFromList(Atom.JobListKey, pager.FromRecord , pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }
-
-    var pager = new Pager(from, perPage, count);
 
     Func<string, Job> GetJobData = (string jobId) =>
     {
@@ -118,22 +118,22 @@ WriteLiteral("\r\n");
             
             #line default
             #line hidden
-WriteLiteral("\r\n\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n        ");
+WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n        ");
 
 
             
-            #line 44 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 43 "..\..\Dashboard\Pages\AtomsPage.cshtml"
    Write(Html.JobsSidebar());
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 class=\"page-header\">\"Atomic" +
-" jobs\"</h1>\r\n\r\n");
+WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 class=\"page-header\">Atomic " +
+"jobs</h1>\r\n\r\n");
 
 
             
-            #line 49 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 48 "..\..\Dashboard\Pages\AtomsPage.cshtml"
          if (pager.TotalPageCount == 0)
         {
 
@@ -145,7 +145,7 @@ WriteLiteral("            <div class=\"alert alert-info\">\r\n                No
 
 
             
-            #line 54 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 53 "..\..\Dashboard\Pages\AtomsPage.cshtml"
         }
         else
         {
@@ -158,7 +158,7 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
 
             
-            #line 59 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 58 "..\..\Dashboard\Pages\AtomsPage.cshtml"
                Write(Html.PerPageSelector(pager));
 
             
@@ -178,7 +178,7 @@ WriteLiteral(@"
 
 
             
-            #line 69 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\AtomsPage.cshtml"
                                              Write(Strings.Common_Id);
 
             
@@ -188,7 +188,7 @@ WriteLiteral("</th>\r\n                            <th>");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 69 "..\..\Dashboard\Pages\AtomsPage.cshtml"
                            Write(Strings.Common_Job);
 
             
@@ -199,7 +199,7 @@ WriteLiteral("</th>\r\n                        </tr>\r\n                        
 
 
             
-            #line 74 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 73 "..\..\Dashboard\Pages\AtomsPage.cshtml"
                          foreach (var atom in atoms)
                         {
 
@@ -212,7 +212,7 @@ WriteLiteral("                            <tr class=\"js-jobs-list-row\">\r\n   
 
 
             
-            #line 78 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 77 "..\..\Dashboard\Pages\AtomsPage.cshtml"
                                                                                                          Write(atom);
 
             
@@ -223,27 +223,27 @@ WriteLiteral("\" />\r\n                                </td>\r\n                
 
 
             
-            #line 81 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 80 "..\..\Dashboard\Pages\AtomsPage.cshtml"
                                Write(Html.JobIdLink(atom));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                </td>\r\n                                <th>");
+WriteLiteral("\r\n                                </td>\r\n                                <td>");
 
 
             
-            #line 83 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 82 "..\..\Dashboard\Pages\AtomsPage.cshtml"
                                Write(Html.JobNameLink(atom, GetJobData(atom)));
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                            </tr>\r\n");
+WriteLiteral("</td>\r\n                            </tr>\r\n");
 
 
             
-            #line 85 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 84 "..\..\Dashboard\Pages\AtomsPage.cshtml"
                         }
 
             
@@ -254,7 +254,7 @@ WriteLiteral("                        </tbody>\r\n                    </table>\r
 
 
             
-            #line 90 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 89 "..\..\Dashboard\Pages\AtomsPage.cshtml"
            Write(Html.Paginator(pager));
 
             
@@ -264,7 +264,7 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 92 "..\..\Dashboard\Pages\AtomsPage.cshtml"
+            #line 91 "..\..\Dashboard\Pages\AtomsPage.cshtml"
         }
 
             

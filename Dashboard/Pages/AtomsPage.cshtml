@@ -18,16 +18,16 @@
 
     long count = 0;
     List<string> atoms = null;
+    Pager pager = null;
     using (var connection = Storage.GetConnection())
     {
         if (connection is JobStorageConnection jsc)
         {
             count = jsc.GetListCount(Atom.JobListKey);
-            atoms = jsc.GetRangeFromList(Atom.JobListKey, from, from + perPage);
+            pager = new Pager(from, perPage, count);
+            atoms = jsc.GetRangeFromList(Atom.JobListKey, pager.FromRecord , pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }
-
-    var pager = new Pager(from, perPage, count);
 
     Func<string, Job> GetJobData = (string jobId) =>
     {
@@ -37,7 +37,6 @@
         }
     };
 }
-
 
 <div class="row">
     <div class="col-md-3">
@@ -80,7 +79,7 @@
                                 <td>
                                     @Html.JobIdLink(atom)
                                 </td>
-                                <th>@Html.JobNameLink(atom, GetJobData(atom))</th>
+                                <td>@Html.JobNameLink(atom, GetJobData(atom))</td>
                             </tr>
                         }
                         </tbody>
