@@ -1,0 +1,97 @@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using Hangfire
+@using Hangfire.Atoms
+@using Hangfire.Common
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
+@using Hangfire.States
+@using Hangfire.Storage
+@using Hangfire.Storage.Monitoring
+@inherits Hangfire.Dashboard.RazorPage
+@{
+    var monitor = Storage.GetMonitoringApi();
+    var job = monitor.JobDetails(JobId);
+
+    string title = null;
+
+    if (job != null)
+    {
+        title = job.Job != null ? Html.JobName(job.Job) : null;
+    }
+
+    title = title ?? Strings.Common_Job;
+    Layout = new LayoutPage(title);
+
+    Dictionary<string, string> atomStates = null;
+    using (var connection = Storage.GetJobStorageConnection())
+    {
+        atomStates = connection.GetAllEntriesFromHash(Atom.GenerateSubAtomKeys(JobId));
+    }
+}
+
+<div class="row">
+    <div class="col-md-3">
+        @Html.JobsSidebar()
+    </div>
+    <div class="col-md-9">
+        <h1 class="page-header">@title</h1>
+
+        @if (job == null)
+        {
+            <div class="alert alert-warning">
+                @String.Format(Strings.JobDetailsPage_JobExpired, JobId)
+            </div>
+        }
+        else
+        {
+            if (job.ExpireAt.HasValue)
+            {
+                <div class="alert alert-info">
+                    @Html.Raw(String.Format(Strings.JobDetailsPage_JobFinished_Warning_Html, JobHelper.ToTimestamp(job.ExpireAt.Value), job.ExpireAt))
+                </div>
+            }
+
+            <div class="job-snippet">
+                <div class="job-snippet-code">
+                    <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
+
+</code></pre>
+                </div>
+
+            </div>
+
+            foreach (var state in atomStates)
+            {
+                var subatomJobDetails = monitor.JobDetails(state.Key);
+                var lastState = subatomJobDetails.History.Last();
+
+                var accentColor = JobHistoryRenderer.GetForegroundStateColor(lastState.StateName);
+                var backgroundColor = JobHistoryRenderer.GetBackgroundStateColor(lastState.StateName);
+
+                <div class="state-card" style="border-color: @accentColor">
+                    <h4 class="state-card-title" style="color: @accentColor">
+                        <small class="pull-right text-muted">
+                            @Html.RelativeTime(lastState.CreatedAt)
+                        </small>
+
+                        @Html.StateLabel(lastState.StateName)
+                        @Html.JobNameLink(state.Key, subatomJobDetails.Job)
+                    </h4>
+
+                    @if (!string.IsNullOrWhiteSpace(lastState.Reason))
+                    {
+                        <p class="state-card-text text-muted">@lastState.Reason</p>
+                    }
+
+                    <div class="state-card-body" style="background-color: @backgroundColor">
+                        @Html.RenderHistory(lastState.StateName, lastState.Data)
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

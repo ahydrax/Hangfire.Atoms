@@ -77,7 +77,7 @@
                                     <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@atom" />
                                 </td>
                                 <td>
-                                    @Html.JobIdLink(atom)
+                                    <a href="@Url.To("/jobs/atoms/" + atom)">@atom</a>
                                 </td>
                                 <td>@Html.JobNameLink(atom, GetJobData(atom))</td>
                             </tr>

@@ -9,7 +9,7 @@ namespace Hangfire.Atoms.Dashboard
         public static NonEscapedString Render(HtmlHelper helper, IDictionary<string, string> stateData)
         {
             var builder = new StringBuilder();
-
+            
             builder.Append("<dl class=\"dl-horizontal\">");
             //TODO
             builder.Append("</dl>");

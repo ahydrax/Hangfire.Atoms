@@ -23,24 +23,34 @@ namespace Hangfire.Atoms
             return builder.Build();
         }
 
-        internal static string GenerateKey(string jobId) => "atomic-job:" + jobId;
+        internal static string GenerateAtomKey(string jobId) => "atom:" + jobId;
+
+        internal static string GenerateSubAtomKeys(string jobId) => "atom:subs:" + jobId;
 
         [DisplayName("Subatom of {0} finished")]
         public static void OnSubatomFinished(string name, string atomId, string subAtomId, PerformContext context)
         {
-            var key = GenerateKey(atomId);
+            var jsc = (JobStorageConnection)context.Connection;
+
+            var key = GenerateSubAtomKeys(atomId);
             context.Connection.SetRangeInHash(key, new[] { new KeyValuePair<string, string>(subAtomId, Finished) });
 
-            var completionData = context.Connection.GetAllEntriesFromHash(key);
-
-            var shouldStart = completionData.All(x => x.Value == Finished);
+            var shouldStart = context.Connection.GetAllEntriesFromHash(key).All(x => x.Value == Finished);
             if (shouldStart)
             {
-                using (context.Connection.AcquireDistributedLock(key, TimeSpan.FromSeconds(10)))
+                var atomKey = GenerateAtomKey(atomId);
+                var alreadyRun = jsc.GetValueFromHash(atomKey, "running") == "true";
+                if (alreadyRun) return;
+
+                using (jsc.AcquireDistributedLock(atomKey, TimeSpan.Zero))
                 {
+                    alreadyRun = jsc.GetValueFromHash(atomKey, "running") == "true";
+                    if (alreadyRun) return;
+
                     // TODO extract client
                     var client = new BackgroundJobClient();
                     client.ChangeState(atomId, new EnqueuedState());
+                    jsc.SetRangeInHash(atomKey, new[] { new KeyValuePair<string, string>(atomKey, "true") });
                 }
             }
         }
@@ -52,7 +62,7 @@ namespace Hangfire.Atoms
             {
                 if (tr is JobStorageTransaction jst)
                 {
-                    jst.ExpireHash(GenerateKey(context.BackgroundJob.Id), DefaultAtomsExpiration);
+                    jst.ExpireHash(GenerateSubAtomKeys(context.BackgroundJob.Id), DefaultAtomsExpiration);
                     jst.RemoveFromList(JobListKey, context.BackgroundJob.Id);
                     tr.Commit();
                 }
