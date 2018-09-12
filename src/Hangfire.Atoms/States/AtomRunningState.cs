@@ -26,7 +26,7 @@ namespace Hangfire.Atoms.States
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
 
-        public class Handler : IStateHandler, IApplyStateFilter
+        public class Handler : IStateHandler, IApplyStateFilter, IElectStateFilter
         {
             private readonly IBackgroundJobStateChanger _stateChanger;
 
@@ -89,6 +89,18 @@ namespace Hangfire.Atoms.States
 
             public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
+            }
+
+            public void OnStateElection(ElectStateContext context)
+            {
+                if (context.CurrentState == ScheduledState.StateName || context.CurrentState == AwaitingState.StateName)
+                {
+                    var isAtom = context.Connection.GetJobParameter(context.BackgroundJob.Id, "!IsAtom") != null;
+                    if (isAtom)
+                    {
+                        context.CandidateState = new AtomRunningState(context.BackgroundJob.Id);
+                    }
+                }
             }
         }
     }

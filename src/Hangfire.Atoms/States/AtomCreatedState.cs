@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Hangfire.States;
+using Hangfire.Storage;
 
 namespace Hangfire.Atoms.States
 {
@@ -22,5 +23,19 @@ namespace Hangfire.Atoms.States
         public string Reason { get; }
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
+
+        internal class Handler : IStateHandler
+        {
+            public string StateName => AtomCreatedState.StateName;
+
+            public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
+            {
+                context.Connection.SetJobParameter(context.BackgroundJob.Id, "!IsAtom", "ignored");
+            }
+
+            public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
+            {
+            }
+        }
     }
 }

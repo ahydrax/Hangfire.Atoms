@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using Hangfire.Atoms.Builder;
+using Hangfire.Atoms.States;
+using Hangfire.States;
 
 namespace Hangfire.Atoms
 {
@@ -11,9 +13,27 @@ namespace Hangfire.Atoms
         public static readonly string Waiting = "waiting";
         public static readonly string Finished = "finished";
 
-        public static string Create(this IBackgroundJobClient client, string name, Action<IAtomBuilder> buildAtom)
+        public static string Enqueue(this IBackgroundJobClient client, string name, Action<IAtomBuilder> buildAtom)
         {
             var builder = new AtomBuilder(name, JobStorage.Current, client, buildAtom);
+            return builder.Build();
+        }
+
+        public static string Schedule(this IBackgroundJobClient client, string name, TimeSpan enqueueIn, Action<IAtomBuilder> buildAtom)
+        {
+            var builder = new AtomBuilder(name, JobStorage.Current, client, buildAtom, new ScheduledState(enqueueIn));
+            return builder.Build();
+        }
+
+        public static string Schedule(this IBackgroundJobClient client, string name, DateTime enqueueAt, Action<IAtomBuilder> buildAtom)
+        {
+            var builder = new AtomBuilder(name, JobStorage.Current, client, buildAtom, new ScheduledState(enqueueAt));
+            return builder.Build();
+        }
+
+        public static string ContinueWith(this IBackgroundJobClient client, string parentId, string name, Action<IAtomBuilder> buildAtom)
+        {
+            var builder = new AtomBuilder(name, JobStorage.Current, client, buildAtom, new AwaitingState(parentId));
             return builder.Build();
         }
 

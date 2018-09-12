@@ -25,6 +25,7 @@ namespace Hangfire.Atoms
             var subAtomHandler = new SubAtomCreatedState.Handler();
 
             GlobalStateHandlers.Handlers.Add(atomRunningHandler);
+            GlobalStateHandlers.Handlers.Add(new AtomCreatedState.Handler());
             GlobalStateHandlers.Handlers.Add(subAtomHandler);
 
             GlobalJobFilters.Filters.Add(atomRunningHandler);

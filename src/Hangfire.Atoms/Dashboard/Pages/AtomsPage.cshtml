@@ -29,12 +29,12 @@
             atoms = jsc.GetRangeFromList(Atom.JobListKey, pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }
-
+    
     Func<string, Job> GetJobData = (string jobId) =>
     {
         using (var connection = Storage.GetConnection())
         {
-            return connection.GetJobData(jobId).Job;
+            return connection.GetJobData(jobId)?.Job;
         }
     };
 
@@ -87,6 +87,12 @@
                         <tbody>
                             @foreach (var atom in atoms)
                             {
+                                var job = GetJobData(atom);
+                                if (job == null)
+                                {
+                                    continue;
+                                }
+
                                 var progress = GetJobProgressPercentage(atom);
                                 <tr class="js-jobs-list-row">
                                     <td>
@@ -95,7 +101,7 @@
                                     <td nowrap>
                                         <a href="@Url.To("/jobs/atoms/" + atom)">@atom</a>
                                     </td>
-                                    <td nowrap> @Html.JobNameLink(atom, GetJobData(atom))</td>
+                                    <td nowrap> @Html.JobNameLink(atom, job)</td>
                                     <td>
                                         <div class="progress">
                                             <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="width: @progress%;">

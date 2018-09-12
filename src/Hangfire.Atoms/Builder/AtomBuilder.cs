@@ -10,18 +10,18 @@ namespace Hangfire.Atoms.Builder
 {
     public class AtomBuilder : IAtomBuilder
     {
-        private readonly string _name;
         private readonly string _atomId;
         private readonly JobStorage _jobStorage;
         private readonly IBackgroundJobClient _client;
+        private readonly IState _initialState;
         private readonly Action<IAtomBuilder> _buildAtom;
         private readonly Dictionary<string, IState> _createdSubAtoms;
 
-        public AtomBuilder(string name, JobStorage jobStorage, IBackgroundJobClient client, Action<IAtomBuilder> buildAtom)
+        public AtomBuilder(string name, JobStorage jobStorage, IBackgroundJobClient client, Action<IAtomBuilder> buildAtom, IState initialState = null)
         {
-            _name = name;
             _client = client;
-            _atomId = _client.Create(() => Atom.Running(_name), new AtomCreatingState());
+            _atomId = _client.Create(() => Atom.Running(name), new AtomCreatingState());
+            _initialState = initialState ?? new AtomRunningState(_atomId);
             _buildAtom = buildAtom;
             _jobStorage = jobStorage;
             _createdSubAtoms = new Dictionary<string, IState>();
@@ -74,8 +74,8 @@ namespace Hangfire.Atoms.Builder
                 // CREATED
                 _client.ChangeState(_atomId, new AtomCreatedState(_atomId));
 
-                // RUNNING
-                _client.ChangeState(_atomId, new AtomRunningState(_atomId));
+                // RUN
+                _client.ChangeState(_atomId, _initialState);
             }
             catch
             {
