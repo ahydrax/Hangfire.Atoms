@@ -63,7 +63,6 @@ namespace Hangfire.Atoms
                 if (tr is JobStorageTransaction jst)
                 {
                     jst.ExpireHash(GenerateSubAtomKeys(context.BackgroundJob.Id), DefaultAtomsExpiration);
-                    jst.RemoveFromList(JobListKey, context.BackgroundJob.Id);
                     tr.Commit();
                 }
             }

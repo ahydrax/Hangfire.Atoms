@@ -73,15 +73,6 @@ namespace Hangfire.Atoms.Builder
             try
             {
                 // CREATING
-                using (var connection = _jobStorage.GetConnection())
-                {
-                    using (var tr = connection.CreateWriteTransaction())
-                    {
-                        tr.InsertToList(Atom.JobListKey, _atomId);
-                        tr.Commit();
-                    }
-                }
-
                 _buildAtom(this);
 
                 // CREATED
