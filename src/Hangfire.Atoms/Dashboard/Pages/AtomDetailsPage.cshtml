@@ -67,7 +67,7 @@
             foreach (var state in atomStates)
             {
                 var subatomJobDetails = monitor.JobDetails(state.Key);
-                var lastState = subatomJobDetails.History.Last();
+                var lastState = subatomJobDetails.History.First();
 
                 var accentColor = JobHistoryRenderer.GetForegroundStateColor(lastState.StateName);
                 var backgroundColor = JobHistoryRenderer.GetBackgroundStateColor(lastState.StateName);

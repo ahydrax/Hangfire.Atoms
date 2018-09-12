@@ -30,7 +30,7 @@ namespace Hangfire.Atoms.States
         public IState NextState { get; }
         public JobContinuationOptions ContinuationOptions { get; }
         public string Name => StateName;
-        public string Reason => "Created as part of atom.";
+        public string Reason { get; }
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
 
