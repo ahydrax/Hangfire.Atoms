@@ -19,7 +19,7 @@ namespace Hangfire.Atoms.States
 
         public string AtomId { get; }
         public string Name => StateName;
-        public string Reason => "Atom has been created";
+        public string Reason => "Atom has been created.";
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
     }
