@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Hangfire.States;
+using Hangfire.Storage;
 using Newtonsoft.Json;
 
 namespace Hangfire.Atoms.States
@@ -27,5 +28,28 @@ namespace Hangfire.Atoms.States
         public string Reason => "Created as part of atom.";
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
+
+        internal class Handler : IStateHandler
+        {
+            public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
+            {
+                if (context.NewState is SubAtomCreatedState state)
+                {
+                    transaction.SetRangeInHash(
+                        Atom.GenerateSubAtomKeys(state.AtomId),
+                        new[]
+                        {
+                            new KeyValuePair<string, string>(context.BackgroundJob.Id, Atom.Waiting)
+                        });
+                }
+            }
+
+            public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
+            {
+
+            }
+
+            public string StateName => SubAtomCreatedState.StateName;
+        }
     }
 }

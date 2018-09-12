@@ -76,11 +76,6 @@ namespace Hangfire.Atoms.Builder
                 _buildAtom(this);
 
                 // CREATED
-                using (var connection = _jobStorage.GetConnection())
-                {
-                    var jobData = _createdSubAtoms.Select(x => new KeyValuePair<string, string>(x.Key, Atom.Waiting));
-                    connection.SetRangeInHash(Atom.GenerateSubAtomKeys(_atomId), jobData);
-                }
                 _client.ChangeState(_atomId, new AtomCreatedState(_atomId));
 
                 // RUNNING

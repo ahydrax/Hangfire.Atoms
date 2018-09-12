@@ -24,7 +24,7 @@ namespace Hangfire.Atoms.States
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
 
-        public class Handler : IStateHandler
+        public class Handler : IStateHandler, IApplyStateFilter
         {
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
@@ -36,13 +36,27 @@ namespace Hangfire.Atoms.States
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                if (context.OldStateName == AtomRunningState.StateName)
+                if (context.OldStateName == StateName)
                 {
                     transaction.RemoveFromList(Atom.JobListKey, context.BackgroundJob.Id);
                 }
             }
 
             public string StateName => AtomRunningState.StateName;
+
+            public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+            {
+
+            }
+
+            public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+            {
+                if (context.OldStateName == StateName)
+                {
+                    var jst = (JobStorageTransaction)transaction;
+                    jst.ExpireHash(Atom.GenerateSubAtomKeys(context.BackgroundJob.Id), context.JobExpirationTimeout);
+                }
+            }
         }
     }
 }

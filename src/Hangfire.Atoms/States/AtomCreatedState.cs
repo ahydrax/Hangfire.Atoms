@@ -9,7 +9,7 @@ namespace Hangfire.Atoms.States
 
         public Dictionary<string, string> SerializeData() => new Dictionary<string, string>
         {
-            {nameof(AtomId), AtomId}
+            {nameof(AtomId), AtomId},
         };
 
         public AtomCreatedState(string atomId)
