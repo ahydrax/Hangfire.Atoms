@@ -34,7 +34,6 @@ namespace Hangfire.Atoms.Tests.Web
                 ServerCheckInterval = TimeSpan.FromSeconds(1),
                 HeartbeatInterval = TimeSpan.FromMilliseconds(500),
                 ServerTimeout = TimeSpan.FromSeconds(2),
-                WorkerCount = 10,
                 ServerName = "ATOMS SERVER",
                 Queues = new[] { "queue1", "default", "queue2" }
             });

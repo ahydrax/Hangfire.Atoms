@@ -22,7 +22,7 @@ namespace Hangfire.Atoms.States
 
         public string AtomId { get; }
         public string Name => StateName;
-        public string Reason => "Atom is running.";
+        public string Reason { get; }
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
 

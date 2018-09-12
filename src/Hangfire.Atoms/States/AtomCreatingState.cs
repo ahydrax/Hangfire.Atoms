@@ -10,7 +10,7 @@ namespace Hangfire.Atoms.States
         public Dictionary<string, string> SerializeData() => new Dictionary<string, string>();
         
         public string Name => StateName;
-        public string Reason => "Waiting until atom created.";
+        public string Reason { get; }
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
     }
