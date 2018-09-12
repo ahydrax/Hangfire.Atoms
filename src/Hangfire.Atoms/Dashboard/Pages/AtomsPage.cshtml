@@ -1,6 +1,7 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System
 @using System.Collections.Generic
+@using System.Linq
 @using Hangfire.Atoms
 @using Hangfire.Common
 @using Hangfire.Dashboard
@@ -25,7 +26,7 @@
         {
             count = jsc.GetListCount(Atom.JobListKey);
             pager = new Pager(from, perPage, count);
-            atoms = jsc.GetRangeFromList(Atom.JobListKey, pager.FromRecord , pager.FromRecord + pager.RecordsPerPage - 1);
+            atoms = jsc.GetRangeFromList(Atom.JobListKey, pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }
 
@@ -35,6 +36,19 @@
         {
             return connection.GetJobData(jobId).Job;
         }
+    };
+
+    Func<string, int> GetJobProgressPercentage = (string jobId) =>
+    {
+        Dictionary<string, string> subatomsProgress;
+        using (var connection = Storage.GetConnection())
+        {
+            subatomsProgress = connection.GetAllEntriesFromHash(Atom.GenerateSubAtomKeys(jobId));
+        }
+
+        var finished = subatomsProgress.Count(x => x.Value == Atom.Finished);
+        var all = subatomsProgress.Count;
+        return finished * 100 / all;
     };
 }
 
@@ -61,27 +75,35 @@
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
-                        <tr>
-                            <th class="min-width">
-                                <input type="checkbox" class="js-jobs-list-select-all" />
-                            </th>
-                            <th class="min-width">@Strings.Common_Id</th>
-                            <th>@Strings.Common_Job</th>
-                        </tr>
+                            <tr>
+                                <th class="min-width">
+                                    <input type="checkbox" class="js-jobs-list-select-all" />
+                                </th>
+                                <th class="min-width">@Strings.Common_Id</th>
+                                <th>@Strings.Common_Job</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        @foreach (var atom in atoms)
-                        {
-                            <tr class="js-jobs-list-row">
-                                <td>
-                                    <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@atom" />
-                                </td>
-                                <td>
-                                    <a href="@Url.To("/jobs/atoms/" + atom)">@atom</a>
-                                </td>
-                                <td>@Html.JobNameLink(atom, GetJobData(atom))</td>
-                            </tr>
-                        }
+                            @foreach (var atom in atoms)
+                            {
+                                var progress = GetJobProgressPercentage(atom);
+                                <tr class="js-jobs-list-row">
+                                    <td>
+                                        <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@atom" />
+                                    </td>
+                                    <td>
+                                        <a href="@Url.To("/jobs/atoms/" + atom)">@atom</a>
+                                    </td>
+                                    <td>@Html.JobNameLink(atom, GetJobData(atom))</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="width: @progress%;">
+                                                @progress%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>

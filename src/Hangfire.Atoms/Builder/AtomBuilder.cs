@@ -31,7 +31,7 @@ namespace Hangfire.Atoms.Builder
 
         private string CreateSubatomInternal(Expression<Action> action, IState nextState, JobContinuationOptions continuationOptions)
         {
-            var jobId = _client.Create(Job.FromExpression(action), nextState);
+            var jobId = _client.Create(Job.FromExpression(action), new SubAtomCreatedState(_atomId, nextState));
             _createdSubAtoms.Add(jobId, nextState);
             var finalizationJobId = _client.ContinueWith(jobId, () => Atom.OnSubatomFinished(_name, _atomId, jobId, null), continuationOptions);
             _createdUtilityJobs.Add(finalizationJobId);
@@ -39,28 +39,28 @@ namespace Hangfire.Atoms.Builder
             return finalizationJobId;
         }
 
-        public string Enqueue(Expression<Action> action, 
+        public string Enqueue(Expression<Action> action,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
             var state = new EnqueuedState();
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string Schedule(Expression<Action> action, DateTime enqueueAt, 
+        public string Schedule(Expression<Action> action, DateTime enqueueAt,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
             var state = new ScheduledState(enqueueAt);
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string Schedule(Expression<Action> action, TimeSpan enqueueIn, 
+        public string Schedule(Expression<Action> action, TimeSpan enqueueIn,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
             var state = new ScheduledState(enqueueIn);
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string ContinueWith(string parentId, Expression<Action> action, 
+        public string ContinueWith(string parentId, Expression<Action> action,
             JobContinuationOptions continuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
@@ -90,14 +90,14 @@ namespace Hangfire.Atoms.Builder
                     var jobData = _createdSubAtoms.Select(x => new KeyValuePair<string, string>(x.Key, Atom.Waiting));
                     connection.SetRangeInHash(Atom.GenerateSubAtomKeys(_atomId), jobData);
                 }
-                _client.ChangeState(_atomId, new AtomCreatedState());
+                _client.ChangeState(_atomId, new AtomCreatedState(_atomId));
 
                 // RUNNING
                 foreach (var subatom in _createdSubAtoms)
                 {
                     _client.ChangeState(subatom.Key, subatom.Value);
                 }
-                _client.ChangeState(_atomId, new AtomRunningState());
+                _client.ChangeState(_atomId, new AtomRunningState(_atomId));
             }
             catch
             {

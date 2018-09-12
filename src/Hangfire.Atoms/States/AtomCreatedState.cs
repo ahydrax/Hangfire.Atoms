@@ -5,10 +5,19 @@ namespace Hangfire.Atoms.States
 {
     public class AtomCreatedState : IState
     {
-        public static readonly string StateName = "atom-created";
+        public static readonly string StateName = "Atom created";
 
-        public Dictionary<string, string> SerializeData() => new Dictionary<string, string>();
+        public Dictionary<string, string> SerializeData() => new Dictionary<string, string>
+        {
+            {nameof(AtomId), AtomId}
+        };
 
+        public AtomCreatedState(string atomId)
+        {
+            AtomId = atomId;
+        }
+
+        public string AtomId { get; }
         public string Name => StateName;
         public string Reason => "Atom has been created";
         public bool IsFinal => false;
