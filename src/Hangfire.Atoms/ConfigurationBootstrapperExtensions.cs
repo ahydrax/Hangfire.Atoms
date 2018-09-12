@@ -22,6 +22,7 @@ namespace Hangfire.Atoms
         private static void SetupAtomMachinery()
         {
             GlobalStateHandlers.Handlers.Add(new AtomRunningState.Handler());
+            GlobalStateHandlers.Handlers.Add(new SubAtomCreatedState.Handler());
         }
 
         private static void SetupDashboard()
