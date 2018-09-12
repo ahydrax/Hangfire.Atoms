@@ -36,16 +36,16 @@ namespace Hangfire.Atoms
             DashboardRoutes.Routes.AddRazorPage("/jobs/atoms", x => new AtomsPage());
             DashboardRoutes.Routes.AddRazorPage("/jobs/atoms/(?<JobId>.+)", x => new AtomDetailsPage(x.Groups["JobId"].Value));
 
-            JobHistoryRenderer.AddBackgroundStateColor(AtomCreatingState.StateName, "#f5f5f5");
-            JobHistoryRenderer.AddForegroundStateColor(AtomCreatingState.StateName, "#6600ff");
+            JobHistoryRenderer.AddBackgroundStateColor(AtomCreatingState.StateName, "#e6f7ff");
+            JobHistoryRenderer.AddForegroundStateColor(AtomCreatingState.StateName, "#006699");
 
-            JobHistoryRenderer.AddBackgroundStateColor(SubAtomCreatedState.StateName, "#f5f5f5");
+            JobHistoryRenderer.AddBackgroundStateColor(SubAtomCreatedState.StateName, "#e6f2ff");
             JobHistoryRenderer.AddForegroundStateColor(SubAtomCreatedState.StateName, "#0066cc");
 
-            JobHistoryRenderer.AddBackgroundStateColor(AtomCreatedState.StateName, "#f5f5f5");
+            JobHistoryRenderer.AddBackgroundStateColor(AtomCreatedState.StateName, "#e6f2ff");
             JobHistoryRenderer.AddForegroundStateColor(AtomCreatedState.StateName, "#0066cc");
 
-            JobHistoryRenderer.AddBackgroundStateColor(AtomRunningState.StateName, "#f5f5f5");
+            JobHistoryRenderer.AddBackgroundStateColor(AtomRunningState.StateName, "#fff5e6");
             JobHistoryRenderer.AddForegroundStateColor(AtomRunningState.StateName, "#ff9900");
 
             JobHistoryRenderer.Register(SubAtomCreatedState.StateName, AtomJobHistoryRenderer.AtomRender);
