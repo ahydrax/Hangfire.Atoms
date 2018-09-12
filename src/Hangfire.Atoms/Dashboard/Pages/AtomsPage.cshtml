@@ -62,7 +62,7 @@
         @if (pager.TotalPageCount == 0)
         {
             <div class="alert alert-info">
-                No atomic jobs were created
+                No atomic jobs is running
             </div>
         }
         else
@@ -79,8 +79,9 @@
                                 <th class="min-width">
                                     <input type="checkbox" class="js-jobs-list-select-all" />
                                 </th>
-                                <th class="min-width">@Strings.Common_Id</th>
-                                <th>@Strings.Common_Job</th>
+                                <th class="min-width" style="line-break: strict">@Strings.Common_Id</th>
+                                <th class="min-width" style="line-break: strict">@Strings.Common_Job</th>
+                                <th>Progress</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -91,14 +92,14 @@
                                     <td>
                                         <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@atom" />
                                     </td>
-                                    <td>
+                                    <td nowrap>
                                         <a href="@Url.To("/jobs/atoms/" + atom)">@atom</a>
                                     </td>
-                                    <td>@Html.JobNameLink(atom, GetJobData(atom))</td>
+                                    <td nowrap> @Html.JobNameLink(atom, GetJobData(atom))</td>
                                     <td>
                                         <div class="progress">
-                                            <div class="progress-bar" role="progressbar" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="width: @progress%;">
-                                                @progress%
+                                            <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="width: @progress%;">
+                                                <span class="sr-only">@progress% complete</span>
                                             </div>
                                         </div>
                                     </td>

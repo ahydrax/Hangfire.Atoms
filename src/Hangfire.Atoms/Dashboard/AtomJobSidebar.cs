@@ -23,7 +23,7 @@ namespace Hangfire.Atoms.Dashboard
             return new Metric(atomsCount)
             {
                 Title = "Atoms",
-                Style = atomsCount == 0 ? MetricStyle.Default : MetricStyle.Info
+                Style = atomsCount == 0 ? MetricStyle.Default : MetricStyle.Warning
             };
         }
     }

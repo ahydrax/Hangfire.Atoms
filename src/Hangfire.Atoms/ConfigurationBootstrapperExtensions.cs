@@ -13,6 +13,22 @@ namespace Hangfire.Atoms
         {
             ThrowIfStorageIsNotSupported();
 
+            SetupAtomMachinery();
+            SetupDashboard();
+
+            return configuration;
+        }
+
+        private static void SetupAtomMachinery()
+        {
+            GlobalStateHandlers.Handlers.Add(new AtomRunningState.Handler());
+        }
+
+        private static void SetupDashboard()
+        {
+            DashboardRoutes.Routes.AddRazorPage("/jobs/atoms", x => new AtomsPage());
+            DashboardRoutes.Routes.AddRazorPage("/jobs/atoms/(?<JobId>.+)", x => new AtomDetailsPage(x.Groups["JobId"].Value));
+
             JobHistoryRenderer.AddBackgroundStateColor(AtomCreatingState.StateName, "#f5f5f5");
             JobHistoryRenderer.AddForegroundStateColor(AtomCreatingState.StateName, "#6600ff");
 
@@ -31,11 +47,6 @@ namespace Hangfire.Atoms
             JobHistoryRenderer.Register(AtomRunningState.StateName, AtomJobHistoryRenderer.AtomRender);
 
             JobsSidebarMenu.Items.Add(AtomJobSidebar.RenderAtomJobMenu);
-            
-            DashboardRoutes.Routes.AddRazorPage("/jobs/atoms", x => new AtomsPage());
-            DashboardRoutes.Routes.AddRazorPage("/jobs/atoms/(?<JobId>.+)", x => new AtomDetailsPage(x.Groups["JobId"].Value));
-
-            return configuration;
         }
 
         private static void ThrowIfStorageIsNotSupported()
