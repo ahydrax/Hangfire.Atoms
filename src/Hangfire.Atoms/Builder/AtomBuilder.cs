@@ -16,27 +16,23 @@ namespace Hangfire.Atoms.Builder
         private readonly IBackgroundJobClient _client;
         private readonly Action<IAtomBuilder> _buildAtom;
         private readonly Dictionary<string, IState> _createdSubAtoms;
-        private readonly List<string> _createdUtilityJobs;
 
         public AtomBuilder(string name, JobStorage jobStorage, IBackgroundJobClient client, Action<IAtomBuilder> buildAtom)
         {
             _name = name;
             _client = client;
-            _atomId = _client.Create(() => Atom.CleanupStateOnFinish(_name, null), new AtomCreatingState());
+            _atomId = _client.Create(() => Atom.Running(_name), new AtomCreatingState());
             _buildAtom = buildAtom;
             _jobStorage = jobStorage;
             _createdSubAtoms = new Dictionary<string, IState>();
-            _createdUtilityJobs = new List<string>();
         }
 
         private string CreateSubatomInternal(Expression<Action> action, IState nextState, JobContinuationOptions continuationOptions)
         {
-            var jobId = _client.Create(Job.FromExpression(action), new SubAtomCreatedState(_atomId, nextState));
+            var jobId = _client.Create(Job.FromExpression(action), new SubAtomCreatedState(_atomId, continuationOptions, nextState));
             _createdSubAtoms.Add(jobId, nextState);
-            var finalizationJobId = _client.ContinueWith(jobId, () => Atom.OnSubatomFinished(_name, _atomId, jobId, null), continuationOptions);
-            _createdUtilityJobs.Add(finalizationJobId);
 
-            return finalizationJobId;
+            return jobId;
         }
 
         public string Enqueue(Expression<Action> action,
@@ -79,20 +75,11 @@ namespace Hangfire.Atoms.Builder
                 _client.ChangeState(_atomId, new AtomCreatedState(_atomId));
 
                 // RUNNING
-                foreach (var subatom in _createdSubAtoms)
-                {
-                    _client.ChangeState(subatom.Key, subatom.Value);
-                }
                 _client.ChangeState(_atomId, new AtomRunningState(_atomId));
             }
             catch
             {
                 // FULL CLEANUP IN CASE OF FAIL
-                foreach (var utilityJob in _createdUtilityJobs)
-                {
-                    _client.Delete(utilityJob);
-                }
-
                 foreach (var createdJobId in _createdSubAtoms)
                 {
                     _client.Delete(createdJobId.Key);

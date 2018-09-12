@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Hangfire.Atoms.Builder;
-using Hangfire.Server;
-using Hangfire.States;
-using Hangfire.Storage;
 
 namespace Hangfire.Atoms
 {
@@ -14,8 +10,6 @@ namespace Hangfire.Atoms
         public static readonly string JobListKey = "atoms";
         public static readonly string Waiting = "waiting";
         public static readonly string Finished = "finished";
-
-        public static readonly TimeSpan DefaultAtomsExpiration = TimeSpan.FromDays(365);
 
         public static string Create(this IBackgroundJobClient client, string name, Action<IAtomBuilder> buildAtom)
         {
@@ -27,45 +21,15 @@ namespace Hangfire.Atoms
 
         internal static string GenerateSubAtomKeys(string jobId) => "atom:subs:" + jobId;
 
-        [DisplayName("Subatom of {0} finished")]
-        public static void OnSubatomFinished(string name, string atomId, string subAtomId, PerformContext context)
-        {
-            var jsc = (JobStorageConnection)context.Connection;
-
-            var key = GenerateSubAtomKeys(atomId);
-            context.Connection.SetRangeInHash(key, new[] { new KeyValuePair<string, string>(subAtomId, Finished) });
-
-            var shouldStart = context.Connection.GetAllEntriesFromHash(key).All(x => x.Value == Finished);
-            if (shouldStart)
+        internal static KeyValuePair<string, string>[] GenerateSubAtomStatePair(string jobId, string state)
+            => new[]
             {
-                var atomKey = GenerateAtomKey(atomId);
-                var alreadyRun = jsc.GetValueFromHash(atomKey, "running") == "true";
-                if (alreadyRun) return;
-
-                using (jsc.AcquireDistributedLock(atomKey, TimeSpan.Zero))
-                {
-                    alreadyRun = jsc.GetValueFromHash(atomKey, "running") == "true";
-                    if (alreadyRun) return;
-
-                    // TODO extract client
-                    var client = new BackgroundJobClient();
-                    client.ChangeState(atomId, new EnqueuedState());
-                    jsc.SetRangeInHash(atomKey, new[] { new KeyValuePair<string, string>(atomKey, "true") });
-                }
-            }
-        }
+                new KeyValuePair<string, string>(jobId, state)
+            };
 
         [DisplayName("{0}")]
-        public static void CleanupStateOnFinish(string name, PerformContext context)
+        public static void Running(string name)
         {
-            using (var tr = context.Connection.CreateWriteTransaction())
-            {
-                if (tr is JobStorageTransaction jst)
-                {
-                    jst.ExpireHash(GenerateSubAtomKeys(context.BackgroundJob.Id), DefaultAtomsExpiration);
-                    tr.Commit();
-                }
-            }
         }
     }
 }
