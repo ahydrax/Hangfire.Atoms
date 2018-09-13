@@ -77,13 +77,20 @@ namespace Hangfire.Atoms.States
                     var alreadyRun = connection.GetValueFromHash(atomKey, "running") == "true";
                     if (alreadyRun) return;
 
-                    using (connection.AcquireDistributedLock(atomKey, TimeSpan.Zero))
+                    try
                     {
-                        alreadyRun = connection.GetValueFromHash(atomKey, "running") == "true";
-                        if (alreadyRun) return;
+                        using (connection.AcquireDistributedLock(atomKey, TimeSpan.Zero))
+                        {
+                            alreadyRun = connection.GetValueFromHash(atomKey, "running") == "true";
+                            if (alreadyRun) return;
 
-                        _stateChanger.ChangeState(new StateChangeContext(context.Storage, connection, atomId, new EnqueuedState()));
-                        connection.SetRangeInHash(atomKey, Atom.GenerateSubAtomStatePair("running", "true"));
+                            _stateChanger.ChangeState(new StateChangeContext(context.Storage, connection, atomId, new EnqueuedState()));
+                            connection.SetRangeInHash(atomKey, Atom.GenerateSubAtomStatePair("running", "true"));
+                        }
+                    }
+                    catch (DistributedLockTimeoutException)
+                    {
+                        // Assume started
                     }
                 }
             }

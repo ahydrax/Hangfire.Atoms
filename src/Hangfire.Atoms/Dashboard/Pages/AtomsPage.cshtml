@@ -29,7 +29,7 @@
             atoms = jsc.GetRangeFromList(Atom.JobListKey, pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }
-    
+
     Func<string, Job> GetJobData = (string jobId) =>
     {
         using (var connection = Storage.GetConnection())
@@ -79,9 +79,9 @@
                                 <th class="min-width">
                                     <input type="checkbox" class="js-jobs-list-select-all" />
                                 </th>
-                                <th class="min-width" style="line-break: strict">@Strings.Common_Id</th>
-                                <th class="min-width" style="line-break: strict">@Strings.Common_Job</th>
-                                <th>Progress</th>
+                                <th>@Strings.Common_Id</th>
+                                <th>@Strings.Common_Job</th>
+                                <th class="text-center">Progress</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -94,15 +94,18 @@
                                 }
 
                                 var progress = GetJobProgressPercentage(atom);
+                                var detailsLink = Url.To("/jobs/atoms/" + atom);
                                 <tr class="js-jobs-list-row">
                                     <td>
                                         <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@atom" />
                                     </td>
-                                    <td nowrap>
-                                        <a href="@Url.To("/jobs/atoms/" + atom)">@atom</a>
+                                    <td class="min-width word-break">
+                                        <a href="@detailsLink">@atom</a>
                                     </td>
-                                    <td nowrap> @Html.JobNameLink(atom, job)</td>
-                                    <td>
+                                    <td class="word-break">
+                                        <a href="@detailsLink">@Html.JobName(job)</a>
+                                    </td>
+                                    <td style="width: 30%">
                                         <div class="progress">
                                             <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="width: @progress%;">
                                                 <span class="sr-only">@progress% complete</span>

@@ -9,8 +9,6 @@
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
 @using Hangfire.States
-@using Hangfire.Storage
-@using Hangfire.Storage.Monitoring
 @inherits Hangfire.Dashboard.RazorPage
 @{
     var monitor = Storage.GetMonitoringApi();
@@ -31,6 +29,34 @@
     {
         atomStates = connection.GetAllEntriesFromHash(Atom.GenerateSubAtomKeys(JobId));
     }
+    var jobDetails = monitor.JobDetails(JobId);
+
+    var states = atomStates.Select(x =>
+    {
+        var subatomJobDetails = monitor.JobDetails(x.Key);
+        var lastState = subatomJobDetails.History.First();
+
+        return (x, subatomJobDetails, lastState);
+    }).GroupBy(x => x.Item3.StateName).OrderBy(x => x.Key).ToList();
+
+    var subatomsCount = atomStates.Count;
+    var subatomsFinished = states.FirstOrDefault(x => x.Key == SucceededState.StateName)?.Count() ?? 0;
+    var subatomsFinishedPercentage = subatomsFinished * 100 / subatomsCount;
+    var subatomsProcessing = states.FirstOrDefault(x => x.Key == ProcessingState.StateName)?.Count() ?? 0;
+    var subatomsProcessingPercentage = subatomsProcessing * 100 / subatomsCount;
+
+    Func<string, (int, int, int)> GetJobProgressPercentage = (string jobId) =>
+    {
+        Dictionary<string, string> subatomsProgress;
+        using (var connection = Storage.GetConnection())
+        {
+            subatomsProgress = connection.GetAllEntriesFromHash(Atom.GenerateSubAtomKeys(jobId));
+        }
+
+        var finished = subatomsProgress.Count(x => x.Value == Atom.Finished);
+        var all = subatomsProgress.Count;
+        return (finished * 100 / all, finished, all);
+    };
 }
 
 <div class="row">
@@ -55,43 +81,78 @@
                 </div>
             }
 
-            <div class="job-snippet">
-                <div class="job-snippet-code">
-                    <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
-                        @Html.JobNameLink(JobId, job.Job)
-</code></pre>
-                </div>
-
-            </div>
-
-            foreach (var state in atomStates)
-            {
-                var subatomJobDetails = monitor.JobDetails(state.Key);
-                var lastState = subatomJobDetails.History.First();
-
-                var accentColor = JobHistoryRenderer.GetForegroundStateColor(lastState.StateName);
-                var backgroundColor = JobHistoryRenderer.GetBackgroundStateColor(lastState.StateName);
-
-                <div class="state-card" style="border-color: @accentColor">
-                    <h4 class="state-card-title" style="color: @accentColor">
-                        <small class="pull-right text-muted">
-                            @Html.RelativeTime(lastState.CreatedAt)
-                        </small>
-
-                        @Html.StateLabel(lastState.StateName)
-                        @Html.JobNameLink(state.Key, subatomJobDetails.Job)
-                    </h4>
-
-                    @if (!string.IsNullOrWhiteSpace(lastState.Reason))
-                    {
-                        <p class="state-card-text text-muted">@lastState.Reason</p>
-                    }
-
-                    <div class="state-card-body" style="background-color: @backgroundColor">
-                        @Html.RenderHistory(lastState.StateName, lastState.Data)
+            <dl class="dl-horizontal">
+                <dt>@Strings.Common_Id</dt>
+                <dd>@Html.JobIdLink(JobId)</dd>
+                <dt>Done</dt>
+                <dd>@subatomsFinished of @subatomsCount</dd>
+                @if (subatomsProcessing != 0)
+                {
+                    <dt>Processing</dt>
+                    <dd>@subatomsProcessing</dd>
+                }
+                <dt>Progress</dt>
+                <dd>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-success" role="progressbar" style="width: @subatomsFinishedPercentage%;">
+                            <span class="sr-only">@subatomsFinishedPercentage% complete</span>
+                        </div>
+                        <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" style="width: @subatomsProcessingPercentage%;">
+                            <span class="sr-only">@subatomsProcessingPercentage% complete</span>
+                        </div>
                     </div>
-                </div>
-            }
+                </dd>
+            </dl>
+
+            var index = 0;
+            <ul class="nav nav-tabs" role="tablist">
+                @foreach (var state in states)
+                {
+                    var stateBackgroundColor = JobHistoryRenderer.GetForegroundStateColor(state.Key);
+                    <li role="presentation" class="@(index == 0 ? "active" : "")">
+                        <a href="#@state.Key" aria-controls="@state.Key" role="tab" data-toggle="tab">
+                            @state.Key <span class="badge" style="background-color: @stateBackgroundColor">@state.Count()</span>
+                        </a>
+                    </li>
+                    index++;
+                }
+            </ul>
+
+            index = 0;
+            <div class="tab-content">
+                @foreach (var state in states)
+                {
+                    <div role="tabpanel" class="tab-pane @(index == 0 ? "active" : "")" id="@state.Key">
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>@Strings.Common_Id</th>
+                                    <th>@Strings.Common_Job</th>
+                                    <th class="text-center">Details</th>
+                                    <th>Changed at</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var subAtomState in state)
+                                {
+                                    <tr>
+                                        @{
+                                            var subatomJobDetails = subAtomState.Item2;
+                                            var lastState = subAtomState.Item3;
+                                        }
+
+                                        <td class="min-width word-break">@Html.JobIdLink(subAtomState.Item1.Key)</td>
+                                        <td class="min-width word-break">@Html.JobNameLink(state.Key, subatomJobDetails.Job)</td>
+                                        <td>@Html.RenderHistory(lastState.StateName, lastState.Data)</td>
+                                        <td class="min-width">@Html.RelativeTime(lastState.CreatedAt)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    index++;
+                }
+            </div>
         }
     </div>
 </div>
