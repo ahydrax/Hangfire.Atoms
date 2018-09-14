@@ -14,6 +14,11 @@ namespace Hangfire.Atoms.Builder
         string Schedule(Expression<Action> action, TimeSpan enqueueIn, 
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
+        void WaitForTriggerSet(string triggerName);
+
+        string OnTriggerSet(string triggerName, Expression<Action> action,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
         string ContinueWith(string parentId, Expression<Action> action, 
             JobContinuationOptions continuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);

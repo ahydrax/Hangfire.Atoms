@@ -10,7 +10,7 @@
 @using Hangfire.Storage
 @inherits Hangfire.Dashboard.RazorPage
 @{
-    Layout = new LayoutPage("Atoms");
+    Layout = new LayoutPage("Triggers");
 
     int from, perPage;
 
@@ -18,37 +18,24 @@
     int.TryParse(Query("count"), out perPage);
 
     long count = 0;
-    List<string> atoms = null;
+    List<string> triggers = null;
     Pager pager = null;
     using (var connection = Storage.GetConnection())
     {
         if (connection is JobStorageConnection jsc)
         {
-            count = jsc.GetListCount(Atom.JobListKey);
+            count = jsc.GetListCount(Trigger.JobListKey);
             pager = new Pager(from, perPage, count);
-            atoms = jsc.GetRangeFromList(Atom.JobListKey, pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+            triggers = jsc.GetRangeFromList(Trigger.JobListKey, pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }
 
-    Func<string, Job> GetJobData = (string jobId) =>
+    Func<string, string> GetTriggerName = (string jobId) =>
     {
         using (var connection = Storage.GetConnection())
         {
-            return connection.GetJobData(jobId)?.Job;
+            return connection.GetJobParameter(jobId, Trigger.ParameterName);
         }
-    };
-
-    Func<string, int> GetJobProgressPercentage = (string jobId) =>
-    {
-        Dictionary<string, string> subatomsProgress;
-        using (var connection = Storage.GetConnection())
-        {
-            subatomsProgress = connection.GetAllEntriesFromHash(Atom.GenerateSubAtomKeys(jobId));
-        }
-
-        var finished = subatomsProgress.Count(x => x.Value == Atom.Finished);
-        var all = subatomsProgress.Count;
-        return finished * 100 / all;
     };
 }
 
@@ -57,12 +44,12 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        <h1 class="page-header">Atomic jobs</h1>
+        <h1 class="page-header">Triggers</h1>
 
         @if (pager.TotalPageCount == 0)
         {
             <div class="alert alert-info">
-                No atomic jobs are running.
+                No triggers are waiting.
             </div>
         }
         else
@@ -81,36 +68,26 @@
                                 </th>
                                 <th>@Strings.Common_Id</th>
                                 <th>@Strings.Common_Job</th>
-                                <th class="text-center">Progress</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var atom in atoms)
+                            @foreach (var trigger in triggers)
                             {
-                                var job = GetJobData(atom);
-                                if (job == null)
+                                var triggerName = GetTriggerName(trigger);
+                                if (triggerName == null)
                                 {
                                     continue;
                                 }
 
-                                var progress = GetJobProgressPercentage(atom);
-                                var detailsLink = Url.To("/jobs/atoms/" + atom);
                                 <tr class="js-jobs-list-row">
                                     <td>
-                                        <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@atom" />
+                                        <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@trigger" />
                                     </td>
                                     <td class="min-width word-break">
-                                        <a href="@detailsLink">@atom</a>
+                                        @Html.JobIdLink(trigger)
                                     </td>
                                     <td class="word-break">
-                                        <a href="@detailsLink" class="job-method">@Html.JobName(job)</a>
-                                    </td>
-                                    <td style="width: 30%">
-                                        <div class="progress">
-                                            <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="width: @progress%;">
-                                                <span class="sr-only">@progress% complete</span>
-                                            </div>
-                                        </div>
+                                        <a href="@Url.To($"/jobs/details/{trigger}")" class="job-method">@triggerName</a>
                                     </td>
                                 </tr>
                             }

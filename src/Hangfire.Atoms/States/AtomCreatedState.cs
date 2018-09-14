@@ -30,7 +30,7 @@ namespace Hangfire.Atoms.States
 
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                context.Connection.SetJobParameter(context.BackgroundJob.Id, "!IsAtom", "ignored");
+                context.Connection.SetJobParameter(context.BackgroundJob.Id, Atom.ParameterIsAtom, bool.TrueString);
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)

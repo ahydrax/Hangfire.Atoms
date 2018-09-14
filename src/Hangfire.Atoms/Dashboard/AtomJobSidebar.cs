@@ -4,7 +4,7 @@ namespace Hangfire.Atoms.Dashboard
 {
     public static class AtomJobSidebar
     {
-        public static MenuItem RenderAtomJobMenu(RazorPage page)
+        public static MenuItem RenderMenu(RazorPage page)
         {
             return new MenuItem("Atoms running", page.Url.To("/jobs/atoms"))
             {

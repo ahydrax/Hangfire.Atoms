@@ -15,10 +15,8 @@ namespace Hangfire.Atoms.Dashboard
             {
                 var atomId = stateData[nameof(AtomCreatedState.AtomId)];
                 builder.Append("<dl class=\"dl-horizontal\">");
-
-                builder.Append("<dt>Details</dt>");
+                builder.Append("<dt>Atom details:</dt>");
                 builder.Append($"<dd><a href=\"/jobs/atoms/{atomId}\">{atomId}</a></dd>");
-
                 builder.Append("</dl>");
             }
 

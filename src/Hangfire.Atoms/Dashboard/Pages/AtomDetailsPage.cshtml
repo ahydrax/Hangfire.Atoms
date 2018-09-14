@@ -41,22 +41,9 @@
 
     var subatomsCount = atomStates.Count;
     var subatomsFinished = states.FirstOrDefault(x => x.Key == SucceededState.StateName)?.Count() ?? 0;
-    var subatomsFinishedPercentage = subatomsFinished * 100 / subatomsCount;
+    var subatomsFinishedPercentage = Math.Round(subatomsFinished * 100.0M / subatomsCount, MidpointRounding.ToEven);
     var subatomsProcessing = states.FirstOrDefault(x => x.Key == ProcessingState.StateName)?.Count() ?? 0;
-    var subatomsProcessingPercentage = subatomsProcessing * 100 / subatomsCount;
-
-    Func<string, (int, int, int)> GetJobProgressPercentage = (string jobId) =>
-    {
-        Dictionary<string, string> subatomsProgress;
-        using (var connection = Storage.GetConnection())
-        {
-            subatomsProgress = connection.GetAllEntriesFromHash(Atom.GenerateSubAtomKeys(jobId));
-        }
-
-        var finished = subatomsProgress.Count(x => x.Value == Atom.Finished);
-        var all = subatomsProgress.Count;
-        return (finished * 100 / all, finished, all);
-    };
+    var subatomsProcessingPercentage = Math.Floor(subatomsProcessing * 100.0M / subatomsCount);
 }
 
 <div class="row">
@@ -109,8 +96,9 @@
                 @foreach (var state in states)
                 {
                     var stateBackgroundColor = JobHistoryRenderer.GetForegroundStateColor(state.Key);
+                    var stateId = state.Key.ToLowerInvariant().Replace(" ", "");
                     <li role="presentation" class="@(index == 0 ? "active" : "")">
-                        <a href="#@state.Key" aria-controls="@state.Key" role="tab" data-toggle="tab">
+                        <a href="#@stateId" aria-controls="@stateId" role="tab" data-toggle="tab">
                             @state.Key <span class="badge" style="background-color: @stateBackgroundColor">@state.Count()</span>
                         </a>
                     </li>
@@ -122,7 +110,8 @@
             <div class="tab-content">
                 @foreach (var state in states)
                 {
-                    <div role="tabpanel" class="tab-pane @(index == 0 ? "active" : "")" id="@state.Key">
+                    var stateId = state.Key.ToLowerInvariant().Replace(" ", "");
+                    <div role="tabpanel" class="tab-pane @(index == 0 ? "active" : "")" id="@stateId">
                         <table class="table table-condensed">
                             <thead>
                                 <tr>
@@ -142,7 +131,7 @@
                                         }
 
                                         <td class="min-width word-break">@Html.JobIdLink(subAtomState.Item1.Key)</td>
-                                        <td class="min-width word-break">@Html.JobNameLink(state.Key, subatomJobDetails.Job)</td>
+                                        <td class="min-width word-break">@Html.JobNameLink(subAtomState.Item1.Key, subatomJobDetails.Job)</td>
                                         <td>@Html.RenderHistory(lastState.StateName, lastState.Data)</td>
                                         <td class="min-width">@Html.RelativeTime(lastState.CreatedAt)</td>
                                     </tr>

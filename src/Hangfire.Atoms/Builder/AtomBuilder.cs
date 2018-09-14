@@ -56,6 +56,19 @@ namespace Hangfire.Atoms.Builder
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
+        public void WaitForTriggerSet(string triggerName)
+        {
+            var state = new TriggerWaitingState(triggerName);
+            CreateSubatomInternal(() => Trigger.On(triggerName), state, JobContinuationOptions.OnAnyFinishedState);
+        }
+
+        public string OnTriggerSet(string triggerName, Expression<Action> action,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
+        {
+            var state = new TriggerWaitingState(triggerName);
+            return CreateSubatomInternal(action, state, atomProgress);
+        }
+
         public string ContinueWith(string parentId, Expression<Action> action,
             JobContinuationOptions continuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)

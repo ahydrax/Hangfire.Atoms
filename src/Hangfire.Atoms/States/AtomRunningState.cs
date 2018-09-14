@@ -95,7 +95,7 @@ namespace Hangfire.Atoms.States
             {
                 if (context.CurrentState == ScheduledState.StateName || context.CurrentState == AwaitingState.StateName)
                 {
-                    var isAtom = context.Connection.GetJobParameter(context.BackgroundJob.Id, "!IsAtom") != null;
+                    var isAtom = context.Connection.GetJobParameter(context.BackgroundJob.Id, Atom.ParameterIsAtom) == bool.TrueString;
                     if (isAtom)
                     {
                         context.CandidateState = new AtomRunningState(context.BackgroundJob.Id);

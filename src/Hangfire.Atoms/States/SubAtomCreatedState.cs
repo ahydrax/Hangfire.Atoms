@@ -55,7 +55,7 @@ namespace Hangfire.Atoms.States
             {
                 if (context.CandidateState is SucceededState)
                 {
-                    var atomId = context.Connection.GetJobParameter(context.BackgroundJob.Id, "!AtomId");
+                    var atomId = context.Connection.GetJobParameter(context.BackgroundJob.Id, Atom.ParameterAtomId);
                     // Only handle if job is subatom
                     if (atomId == null) return;
 
@@ -73,19 +73,18 @@ namespace Hangfire.Atoms.States
                 var shouldStart = connection.GetAllEntriesFromHash(key).All(x => x.Value == Atom.Finished);
                 if (shouldStart)
                 {
-                    var atomKey = Atom.GenerateAtomKey(atomId);
-                    var alreadyRun = connection.GetValueFromHash(atomKey, "running") == "true";
+                    var alreadyRun = connection.GetJobParameter(atomId, Atom.ParameterRunning) == bool.TrueString;
                     if (alreadyRun) return;
 
                     try
                     {
-                        using (connection.AcquireDistributedLock(atomKey, TimeSpan.Zero))
+                        using (connection.AcquireDistributedLock(Atom.GenerateAtomKey(atomId), TimeSpan.Zero))
                         {
-                            alreadyRun = connection.GetValueFromHash(atomKey, "running") == "true";
+                            alreadyRun = connection.GetJobParameter(atomId, Atom.ParameterRunning) == bool.TrueString;
                             if (alreadyRun) return;
 
                             _stateChanger.ChangeState(new StateChangeContext(context.Storage, connection, atomId, new EnqueuedState()));
-                            connection.SetRangeInHash(atomKey, Atom.GenerateSubAtomStatePair("running", "true"));
+                            connection.SetJobParameter(atomId, Atom.ParameterRunning, bool.TrueString);
                         }
                     }
                     catch (DistributedLockTimeoutException)
@@ -99,7 +98,7 @@ namespace Hangfire.Atoms.States
             {
                 if (context.NewState is SubAtomCreatedState state)
                 {
-                    context.Connection.SetJobParameter(context.BackgroundJob.Id, "!AtomId", state.AtomId);
+                    context.Connection.SetJobParameter(context.BackgroundJob.Id, Atom.ParameterAtomId, state.AtomId);
                     transaction.SetRangeInHash(
                         Atom.GenerateSubAtomKeys(state.AtomId),
                         Atom.GenerateSubAtomStatePair(context.BackgroundJob.Id, Atom.Waiting));
