@@ -100,13 +100,13 @@
                                         <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@atom" />
                                     </td>
                                     <td class="min-width word-break">
-                                        <a href="@detailsLink">@atom</a>
+                                        <a href="@detailsLink">#@atom</a>
                                     </td>
                                     <td class="word-break">
                                         <a href="@detailsLink" class="job-method">@Html.JobName(job)</a>
                                     </td>
                                     <td style="width: 30%">
-                                        <div class="progress">
+                                        <div class="progress" style="margin-bottom: 0">
                                             <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="width: @progress%;">
                                                 <span class="sr-only">@progress% complete</span>
                                             </div>
