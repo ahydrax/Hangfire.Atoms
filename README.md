@@ -29,6 +29,8 @@ You **must** setup Hangfire storage before calling `UseAtoms();`.
 ## Usage
 Additional extension methods are added for `IBackgroundJobClient`.
 
+### Atoms
+
 ```csharp
 var client = new BackgroundJobClient();
 
@@ -64,7 +66,7 @@ var atomId = client.Schedule("atom-3", TimeSpan.FromSeconds(3), builder =>
 client.ContinueWith(atomId, () => Done());
 ```
 
-## Triggers
+### Triggers
 Triggers are event-like primitives. You can subscribe to it and set it manually whenever you need it.
 
 ```csharp
