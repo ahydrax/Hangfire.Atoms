@@ -60,9 +60,20 @@ var atomId = client.Schedule("atom-3", TimeSpan.FromSeconds(3), builder =>
         }
     });
 
-
 // Atoms can be used as a common job which means you can continue them
 client.ContinueWith(atomId, () => Done());
+```
+
+## Triggers
+Triggers are event-like primitives. You can subscribe to it and set it manually whenever you need it.
+
+```csharp
+// Triggers
+var triggerJobId = client.OnTriggerSet("trigger-1");
+client.ContinueWith(triggerJobId, () => DoWork());
+
+// Set trigger manually when you need it
+client.Schedule(() => SetTrigger("trigger-1"), TimeSpan.FromSeconds(10));
 ```
 
 ## License
