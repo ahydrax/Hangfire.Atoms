@@ -1,4 +1,5 @@
 ﻿using System;
+using Hangfire.Annotations;
 using Hangfire.Atoms.Dashboard;
 using Hangfire.Atoms.Dashboard.Pages;
 using Hangfire.Atoms.States;
@@ -9,6 +10,7 @@ namespace Hangfire.Atoms
 {
     public static class ConfigurationBootstrapperExtensions
     {
+        [PublicAPI]
         public static IGlobalConfiguration UseAtoms(this IGlobalConfiguration configuration)
         {
             ThrowIfStorageIsNotSupported();

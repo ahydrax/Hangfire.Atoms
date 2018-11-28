@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Hangfire.Annotations;
 using Hangfire.Atoms.States;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -9,13 +10,13 @@ namespace Hangfire.Atoms
     public static class Trigger
     {
         public static readonly string JobListKey = "atom:triggers";
-        public static readonly string JobIdKey = "jobId";
-        public static readonly string JobSetKey = "set";
         public static readonly string ParameterName = "Trigger";
 
+        [PublicAPI]
         public static string OnTriggerSet(this IBackgroundJobClient client, string triggerName)
             => client.Create(() => On(triggerName), new TriggerWaitingState(triggerName));
 
+        [PublicAPI]
         public static void SetTrigger(this IStorageConnection connection, string triggerName)
         {
             var jsc = (JobStorageConnection)connection;
