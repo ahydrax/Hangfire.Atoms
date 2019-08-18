@@ -69,7 +69,7 @@ namespace Hangfire.Atoms.Builder
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string ContinueWith(string parentId, Expression<Action> action,
+        public string ContinueJobWith(string parentId, Expression<Action> action,
             JobContinuationOptions continuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Hangfire.Atoms.Tests.Web
 {
@@ -13,12 +14,12 @@ namespace Hangfire.Atoms.Tests.Web
             {
                 var job1 = builder.Enqueue(() => Wait(5000));
                 var job2 = builder.Enqueue(() => Wait(3000));
-                var job3 = builder.ContinueWith(job2, () => Wait(2000));
+                var job3 = builder.ContinueJobWith(job2, () => Wait(2000));
                 var job4 = builder.Schedule(() => Wait(3000), DateTime.UtcNow.AddSeconds(5));
-                var job5 = builder.ContinueWith(job4, () => Wait(3000));
+                var job5 = builder.ContinueJobWith(job4, () => Wait(3000));
             });
 
-            client.ContinueWith(atomId, () => Done());
+            client.ContinueJobWith(atomId, () => Done());
         }
 
         public static void Wait(int milliseconds)
@@ -38,11 +39,11 @@ namespace Hangfire.Atoms.Tests.Web
                  {
                      builder.Enqueue(() => Done());
                      var job2 = builder.Enqueue(() => Wait(1000));
-                     var job3 = builder.ContinueWith(job2, () => Wait(500));
+                     var job3 = builder.ContinueJobWith(job2, () => Wait(500));
                  }
              });
 
-            client.ContinueWith(atomId, () => Done());
+            client.ContinueJobWith(atomId, () => Done());
         }
 
         public static void AtomTest3()
@@ -51,17 +52,17 @@ namespace Hangfire.Atoms.Tests.Web
 
             var job1 = client.Enqueue(() => Wait(2000));
 
-            var atomId = client.ContinueWith(job1, "atom-3", builder =>
+            var atomId = client.ContinueJobWith(job1, "atom-3", builder =>
             {
                 for (var i = 0; i < 50; i++)
                 {
                     builder.Enqueue(() => Done());
                     var job2 = builder.Enqueue(() => Wait(1000));
-                    var job3 = builder.ContinueWith(job2, () => Wait(500));
+                    var job3 = builder.ContinueJobWith(job2, () => Wait(500));
                 }
             });
 
-            client.ContinueWith(atomId, () => Done());
+            client.ContinueJobWith(atomId, () => Done());
         }
 
         public static void AtomTest4()
@@ -74,11 +75,11 @@ namespace Hangfire.Atoms.Tests.Web
                 {
                     builder.Enqueue(() => Done());
                     var job2 = builder.Enqueue(() => Wait(1000));
-                    var job3 = builder.ContinueWith(job2, () => Wait(500));
+                    var job3 = builder.ContinueJobWith(job2, () => Wait(500));
                 }
             });
 
-            client.ContinueWith(atomId, () => Done());
+            client.ContinueJobWith(atomId, () => Done());
         }
 
         public static void AtomTest5()
@@ -91,16 +92,36 @@ namespace Hangfire.Atoms.Tests.Web
                 {
                     builder.Enqueue(() => Done());
                     var job2 = builder.Enqueue(() => Wait(1000));
-                    var job3 = builder.ContinueWith(job2, () => Wait(500));
+                    var job3 = builder.ContinueJobWith(job2, () => Wait(500));
                 }
             });
-            
-            client.ContinueWith(atomId, "atom-5-continuation", builder =>
+
+            client.ContinueJobWith(atomId, "atom-5-continuation", builder =>
             {
                 for (var i = 0; i < 50; i++)
                 {
                     builder.Enqueue(() => Done());
                 }
+            });
+        }
+
+        public static void AtomTest6()
+        {
+            var client = new BackgroundJobClient(JobStorage.Current);
+
+            Parallel.For(0, 10, counter =>
+            {
+                var atomId = client.Schedule($"Atom №{counter}", TimeSpan.FromSeconds(3), builder =>
+                {
+                    for (var i = 0; i < 500; i++)
+                    {
+                        builder.Enqueue(() => Done());
+                        var job2 = builder.Enqueue(() => Wait(1000));
+                        var job3 = builder.ContinueJobWith(job2, () => Wait(500));
+                    }
+                });
+
+                client.ContinueJobWith(atomId, () => Done());
             });
         }
     }

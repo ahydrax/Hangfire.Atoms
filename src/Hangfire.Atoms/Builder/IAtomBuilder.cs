@@ -19,7 +19,7 @@ namespace Hangfire.Atoms.Builder
         string OnTriggerSet(string triggerName, Expression<Action> action,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
-        string ContinueWith(string parentId, Expression<Action> action, 
+        string ContinueJobWith(string parentId, Expression<Action> action, 
             JobContinuationOptions continuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
     }

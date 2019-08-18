@@ -33,7 +33,7 @@ namespace Hangfire.Atoms
             return builder.Build();
         }
 
-        public static string ContinueWith(this IBackgroundJobClient client, string parentId, string name, Action<IAtomBuilder> buildAtom)
+        public static string ContinueJobWith(this IBackgroundJobClient client, string parentId, string name, Action<IAtomBuilder> buildAtom)
         {
             var builder = new AtomBuilder(name, JobStorage.Current, client, buildAtom, new AwaitingState(parentId));
             return builder.Build();
