@@ -127,9 +127,9 @@
                                     <table class="table">
                                         <thead>
                                             <tr>
-                                                <th>@Strings.Common_Id</th>
+                                                <th class="min-width word-break">@Strings.Common_Id</th>
                                                 <th>@Strings.Common_Job</th>
-                                                <th>@Strings.Common_Created</th>
+                                                <th class="min-width word-break">@Strings.Common_Created</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -141,9 +141,9 @@
                                                         var lastState = subAtomState.Item3;
                                                     }
 
-                                                    <td class="min-width word-break">@Url.JobIdLink(subAtomState.Item1.Key)</td>
-                                                    <td class="min-width word-break">@Html.JobNameLink(subAtomState.Item1.Key, subatomJobDetails.Job)</td>
-                                                    <td class="min-width">@Html.RelativeTime(lastState.CreatedAt)</td>
+                                                    <td class="min-width word-break">@Html.JobIdLink(subAtomState.Item1.Key)</td>
+                                                    <td>@Html.JobNameLink(subAtomState.Item1.Key, subatomJobDetails.Job)</td>
+                                                    <td class="min-width word-break">@Html.RelativeTime(lastState.CreatedAt)</td>
                                                 </tr>
                                             }
                                         </tbody>
