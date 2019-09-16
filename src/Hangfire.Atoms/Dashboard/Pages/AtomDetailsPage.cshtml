@@ -4,6 +4,7 @@
 @using System.Linq
 @using Hangfire
 @using Hangfire.Atoms
+@using Hangfire.Atoms.Dashboard
 @using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
@@ -44,6 +45,8 @@
     var subatomsFinishedPercentage = Math.Round(subatomsFinished * 100.0M / subatomsCount, MidpointRounding.ToEven);
     var subatomsProcessing = states.FirstOrDefault(x => x.Key == ProcessingState.StateName)?.Count() ?? 0;
     var subatomsProcessingPercentage = Math.Floor(subatomsProcessing * 100.0M / subatomsCount);
+    var subatomsFailed = states.FirstOrDefault(x => x.Key == FailedState.StateName)?.Count() ?? 0;
+    var subatomsFailedPercentage = Math.Floor(subatomsFailed * 100.0M / subatomsCount);
 }
 
 <div class="row">
@@ -68,31 +71,37 @@
                 </div>
             }
 
-            <dl class="dl-horizontal">
-                <dt>@Strings.Common_Id</dt>
-                <dd>@Html.JobIdLink(JobId)</dd>
-                <dt>Done</dt>
-                <dd>@subatomsFinished of @subatomsCount</dd>
-                @if (subatomsProcessing != 0)
-                {
-                    <dt>Processing</dt>
-                    <dd>@subatomsProcessing</dd>
-                }
-                <dt>Progress</dt>
-                <dd>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-success" role="progressbar" style="width: @subatomsFinishedPercentage%;">
-                            <span class="sr-only">@subatomsFinishedPercentage% complete</span>
-                        </div>
-                        <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" style="width: @subatomsProcessingPercentage%;">
-                            <span class="sr-only">@subatomsProcessingPercentage% complete</span>
-                        </div>
-                    </div>
-                </dd>
-            </dl>
+            <div class="job-snippet">
+                <div class="job-snippet-code">
+                    <dl class="dl-horizontal">
+                        <dt>@Strings.Common_Id</dt>
+                        <dd>@Url.JobIdLink(JobId)</dd>
+                        <dt>@Strings.NavigationMenu_Jobs</dt>
+                        <dd>@subatomsCount</dd>
+                        @if (subatomsProcessing != 0)
+                        {
+                            <dt>@Strings.JobsSidebarMenu_Processing</dt>
+                            <dd>@subatomsProcessing</dd>
+                        }
+                        <dt>Progress</dt>
+                        <dd>
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-success" role="progressbar" style="width: @subatomsFinishedPercentage%;">
+                                    @subatomsFinishedPercentage%
+                                </div>
+                                <div class="progress-bar progress-bar-danger" role="progressbar" style="width: @subatomsFailedPercentage%;">
+                                </div>
+                                <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" style="width: @subatomsProcessingPercentage%;">
+                                </div>
+                            </div>
+                        </dd>
+                    </dl>
+
+                </div>
+            </div>
 
             var index = 0;
-            <ul class="nav nav-tabs" role="tablist">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
                 @foreach (var state in states)
                 {
                     var stateBackgroundColor = JobHistoryRenderer.GetForegroundStateColor(state.Key);
@@ -112,32 +121,36 @@
                 {
                     var stateId = state.Key.ToLowerInvariant().Replace(" ", "");
                     <div role="tabpanel" class="tab-pane @(index == 0 ? "active" : "")" id="@stateId">
-                        <table class="table table-condensed">
-                            <thead>
-                                <tr>
-                                    <th>@Strings.Common_Id</th>
-                                    <th>@Strings.Common_Job</th>
-                                    <th class="text-center">Details</th>
-                                    <th>Changed at</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var subAtomState in state)
-                                {
-                                    <tr>
-                                        @{
-                                            var subatomJobDetails = subAtomState.Item2;
-                                            var lastState = subAtomState.Item3;
-                                        }
+                        <div class="panel panel-default" style="border-top: none;">
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>@Strings.Common_Id</th>
+                                                <th>@Strings.Common_Job</th>
+                                                <th>@Strings.Common_Created</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var subAtomState in state)
+                                            {
+                                                <tr>
+                                                    @{
+                                                        var subatomJobDetails = subAtomState.Item2;
+                                                        var lastState = subAtomState.Item3;
+                                                    }
 
-                                        <td class="min-width word-break">@Html.JobIdLink(subAtomState.Item1.Key)</td>
-                                        <td class="min-width word-break">@Html.JobNameLink(subAtomState.Item1.Key, subatomJobDetails.Job)</td>
-                                        <td>@Html.RenderHistory(lastState.StateName, lastState.Data)</td>
-                                        <td class="min-width">@Html.RelativeTime(lastState.CreatedAt)</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                                                    <td class="min-width word-break">@Url.JobIdLink(subAtomState.Item1.Key)</td>
+                                                    <td class="min-width word-break">@Html.JobNameLink(subAtomState.Item1.Key, subatomJobDetails.Job)</td>
+                                                    <td class="min-width">@Html.RelativeTime(lastState.CreatedAt)</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     index++;
                 }

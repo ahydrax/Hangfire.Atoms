@@ -124,5 +124,29 @@ namespace Hangfire.Atoms.Tests.Web
                 client.ContinueJobWith(atomId, () => Done());
             });
         }
+
+        public static void AtomTest7()
+        {
+            var client = new BackgroundJobClient(JobStorage.Current);
+
+            Parallel.For(0, 10, counter =>
+            {
+                var atomId = client.Schedule($"Atom №{counter}", TimeSpan.FromSeconds(3), builder =>
+                {
+                    for (var i = 0; i < 50; i++)
+                    {
+                        builder.Enqueue(() => Done());
+                        builder.Enqueue(() => FailFast());
+                        var job2 = builder.Enqueue(() => Wait(1000));
+                        var job3 = builder.ContinueJobWith(job2, () => Wait(500));
+                    }
+                });
+
+                client.ContinueJobWith(atomId, () => Done());
+            });
+        }
+
+        [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
+        public static void FailFast() => throw new ApplicationException("Test OK");
     }
 }
