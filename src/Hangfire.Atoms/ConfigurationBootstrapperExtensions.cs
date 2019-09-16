@@ -39,8 +39,9 @@ namespace Hangfire.Atoms
         {
             // Atoms
             DashboardRoutes.Routes.AddRazorPage("/jobs/atoms", x => new AtomsPage());
+            DashboardRoutes.Routes.AddClientBatchCommand("/jobs/atoms/delete", (client, jobId) => client.DeleteAtom(jobId));
             DashboardRoutes.Routes.AddRazorPage("/jobs/atoms/(?<JobId>.+)", x => new AtomDetailsPage(x.Groups["JobId"].Value));
-            
+
             JobHistoryRenderer.AddBackgroundStateColor(AtomCreatingState.StateName, "#e6f7ff");
             JobHistoryRenderer.AddForegroundStateColor(AtomCreatingState.StateName, "#006699");
 
@@ -63,9 +64,9 @@ namespace Hangfire.Atoms
             // Triggers
             JobHistoryRenderer.AddBackgroundStateColor(TriggerWaitingState.StateName, "#e6f7ff");
             JobHistoryRenderer.AddForegroundStateColor(TriggerWaitingState.StateName, "#006699");
-            
+
             JobHistoryRenderer.Register(TriggerWaitingState.StateName, JobHistoryRenderer.NullRenderer);
-            
+
             DashboardRoutes.Routes.AddRazorPage("/jobs/triggers", x => new TriggersPage());
             JobsSidebarMenu.Items.Add(TriggerJobSidebar.RenderMenu);
         }

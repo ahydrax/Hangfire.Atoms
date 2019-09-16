@@ -129,21 +129,18 @@ namespace Hangfire.Atoms.Tests.Web
         {
             var client = new BackgroundJobClient(JobStorage.Current);
 
-            Parallel.For(0, 10, counter =>
+            var atomId = client.Schedule($"Atom test-7", TimeSpan.FromSeconds(3), builder =>
             {
-                var atomId = client.Schedule($"Atom №{counter}", TimeSpan.FromSeconds(3), builder =>
+                for (var i = 0; i < 50; i++)
                 {
-                    for (var i = 0; i < 50; i++)
-                    {
-                        builder.Enqueue(() => Done());
-                        builder.Enqueue(() => FailFast());
-                        var job2 = builder.Enqueue(() => Wait(1000));
-                        var job3 = builder.ContinueJobWith(job2, () => Wait(500));
-                    }
-                });
-
-                client.ContinueJobWith(atomId, () => Done());
+                    builder.Enqueue(() => Done());
+                    builder.Enqueue(() => FailFast());
+                    var job2 = builder.Enqueue(() => Wait(1000));
+                    var job3 = builder.ContinueJobWith(job2, () => Wait(500));
+                }
             });
+
+            client.ContinueJobWith(atomId, () => Done());
         }
 
         [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Fail)]

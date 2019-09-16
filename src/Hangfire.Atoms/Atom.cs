@@ -39,6 +39,28 @@ namespace Hangfire.Atoms
             return builder.Build();
         }
 
+        public static void DeleteAtom(this IBackgroundJobClient client, string atomId)
+        {
+            var jobStorage = JobStorage.Current;
+
+            using (var connection = jobStorage.GetJobStorageConnection())
+            {
+                var subAtomIds = connection.GetAllEntriesFromHash(Atom.GenerateSubAtomKeys(atomId));
+
+                using (var transaction = connection.CreateJobStorageTransaction())
+                {
+                    transaction.RemoveHash(Atom.GenerateSubAtomKeys(atomId));
+                }
+
+                foreach (var subAtomId in subAtomIds)
+                {
+                    client.Delete(subAtomId.Key);
+                }
+            }
+
+            client.Delete(atomId);
+        }
+
         public static string OnTriggerSet(this IBackgroundJobClient client, string triggerName, string name, Action<IAtomBuilder> buildAtom)
         {
             var triggerId = client.OnTriggerSet(triggerName);
