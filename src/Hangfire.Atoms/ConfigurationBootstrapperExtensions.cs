@@ -42,17 +42,17 @@ namespace Hangfire.Atoms
             DashboardRoutes.Routes.AddClientBatchCommand("/jobs/atoms/delete", (client, jobId) => client.DeleteAtom(jobId));
             DashboardRoutes.Routes.AddRazorPage("/jobs/atoms/(?<JobId>.+)", x => new AtomDetailsPage(x.Groups["JobId"].Value));
 
-            JobHistoryRenderer.AddBackgroundStateColor(AtomCreatingState.StateName, "#e6f7ff");
-            JobHistoryRenderer.AddForegroundStateColor(AtomCreatingState.StateName, "#006699");
+            JobHistoryRenderer.AddBackgroundStateColor(AtomCreatingState.StateName, "#e0f7fa");
+            JobHistoryRenderer.AddForegroundStateColor(AtomCreatingState.StateName, "#00acc1");
 
-            JobHistoryRenderer.AddBackgroundStateColor(SubAtomCreatedState.StateName, "#e6f2ff");
-            JobHistoryRenderer.AddForegroundStateColor(SubAtomCreatedState.StateName, "#0066cc");
+            JobHistoryRenderer.AddBackgroundStateColor(SubAtomCreatedState.StateName, "#e0f7fa");
+            JobHistoryRenderer.AddForegroundStateColor(SubAtomCreatedState.StateName, "#0097a7");
 
-            JobHistoryRenderer.AddBackgroundStateColor(AtomCreatedState.StateName, "#e6f2ff");
-            JobHistoryRenderer.AddForegroundStateColor(AtomCreatedState.StateName, "#0066cc");
+            JobHistoryRenderer.AddBackgroundStateColor(AtomCreatedState.StateName, "#e0f7fa");
+            JobHistoryRenderer.AddForegroundStateColor(AtomCreatedState.StateName, "#00838f");
 
-            JobHistoryRenderer.AddBackgroundStateColor(AtomRunningState.StateName, "#fff5e6");
-            JobHistoryRenderer.AddForegroundStateColor(AtomRunningState.StateName, "#ff9900");
+            JobHistoryRenderer.AddBackgroundStateColor(AtomRunningState.StateName, "#fff3e0");
+            JobHistoryRenderer.AddForegroundStateColor(AtomRunningState.StateName, "#ef6c00");
 
             JobHistoryRenderer.Register(SubAtomCreatedState.StateName, AtomJobHistoryRenderer.AtomRender);
             JobHistoryRenderer.Register(AtomCreatingState.StateName, JobHistoryRenderer.NullRenderer);
@@ -63,7 +63,7 @@ namespace Hangfire.Atoms
 
             // Triggers
             JobHistoryRenderer.AddBackgroundStateColor(TriggerWaitingState.StateName, "#e6f7ff");
-            JobHistoryRenderer.AddForegroundStateColor(TriggerWaitingState.StateName, "#006699");
+            JobHistoryRenderer.AddForegroundStateColor(TriggerWaitingState.StateName, "#e91e63");
 
             JobHistoryRenderer.Register(TriggerWaitingState.StateName, JobHistoryRenderer.NullRenderer);
 
