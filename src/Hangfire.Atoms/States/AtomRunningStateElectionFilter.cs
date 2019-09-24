@@ -22,6 +22,20 @@ namespace Hangfire.Atoms.States
             Order = 900;
         }
 
+        public void OnStateElection(ElectStateContext context)
+        {
+            if (context.CandidateState is EnqueuedState)
+            {
+                var atomId = context.BackgroundJob.Id;
+
+                var jobIsAtom = context.Connection.GetIfJobIsAtom(atomId);
+                if (!jobIsAtom) return;
+
+                context.CandidateState = new AtomRunningState(atomId);
+                _logger.Debug($"Set atom:{atomId} as running. Old state is {context.CurrentState}");
+            }
+        }
+
         public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             if (context.NewState is AtomRunningState state)
@@ -31,8 +45,8 @@ namespace Hangfire.Atoms.States
                 foreach (var subatomId in subatomIds)
                 {
                     var subatomStateData = context.Connection.GetStateData(subatomId);
-                    var subatomInitialState = subatomStateData.Data[nameof(SubAtomCreatedState.NextState)];
-                    if (subatomInitialState == null) throw new InvalidOperationException("NextState is null");
+                    var subatomInitialState = subatomStateData.Data.GetByKey(nameof(SubAtomCreatedState.NextState));
+                    if (subatomInitialState == null) throw new InvalidOperationException("Next state is NULL.");
 
                     var nextState = JsonUtils.Deserialize<IState>(subatomInitialState);
 
@@ -48,20 +62,6 @@ namespace Hangfire.Atoms.States
 
         public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-        }
-
-        public void OnStateElection(ElectStateContext context)
-        {
-            if (context.CandidateState is EnqueuedState)
-            {
-                var atomId = context.BackgroundJob.Id;
-
-                var jobIsAtom = context.Connection.GetIfJobIsAtom(atomId);
-                if (!jobIsAtom) return;
-
-                context.CandidateState = new AtomRunningState(atomId);
-                _logger.Debug($"Set atom:{atomId} as running. Old state is {context.CurrentState}");
-            }
         }
     }
 }

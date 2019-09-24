@@ -29,16 +29,21 @@ namespace Hangfire.Atoms.States
                 var jsc = (JobStorageConnection)context.Connection;
                 var jst = (JobStorageTransaction)transaction;
 
-                var subatomId = context.BackgroundJob.Id;
-                var atomId = jsc.GetAtomId(subatomId);
-
-                if (atomId == subatomId) // we deal with atom itself
+                var isAtom = jsc.GetIfJobIsAtom(context.BackgroundJob.Id);
+                if (isAtom) // we deal with atom itself
                 {
+                    var atomId = context.BackgroundJob.Id;
                     DeleteAsAtom(jsc, atomId);
                 }
                 else // it's just subatom
                 {
-                    DeleteAsSubatom(jst, atomId, subatomId);
+                    var subatomId = context.BackgroundJob.Id;
+                    var atomId = jsc.GetAtomId(subatomId);
+
+                    if (atomId != null)
+                    {
+                        DeleteAsSubatom(jst, atomId, subatomId);
+                    }
                 }
             }
         }

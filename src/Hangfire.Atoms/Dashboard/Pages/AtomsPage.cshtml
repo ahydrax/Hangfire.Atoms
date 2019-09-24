@@ -117,9 +117,12 @@
                                     </td>
                                     <td>
                                         <div class="progress" style="margin-bottom: 0">
-                                            <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="width: @progress%;">
+                                            <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" style="width: @progress%;">
                                                 <span class="sr-only">@progress% complete</span>
-                                                @progress%
+                                                @if (progress >= 5)
+                                                {
+                                                    <p>@progress%</p>
+                                                }
                                             </div>
                                         </div>
                                     </td>

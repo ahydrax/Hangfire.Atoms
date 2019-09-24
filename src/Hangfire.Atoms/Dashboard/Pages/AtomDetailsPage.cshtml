@@ -82,14 +82,17 @@
                                     if (subatomsFinishedPercentage != 100)
                                     {
                                         <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" style="width: @subatomsFinishedPercentage%;">
-                                            @subatomsFinishedPercentage%
+                                            @if (subatomsFinishedPercentage >= 5)
+                                            {
+                                                <p>@subatomsFinishedPercentage%</p>
+                                            }
                                         </div>
                                         <div class="progress-bar progress-bar-danger progress-bar-striped active" role="progressbar" style="width: @subatomsFailedPercentage%;">
                                         </div>
                                     }
                                     else
                                     {
-                                        <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" style="width: 100%;">
+                                        <div class="progress-bar progress-bar-success" role="progressbar" style="width: 100%;">
                                         </div>
                                     }
                                 }

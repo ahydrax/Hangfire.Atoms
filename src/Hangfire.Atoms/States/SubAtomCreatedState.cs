@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Hangfire.States;
 using Hangfire.Storage;
 using Newtonsoft.Json;
@@ -13,15 +14,24 @@ namespace Hangfire.Atoms.States
         {
             {nameof(AtomId), AtomId},
             {nameof(NextState), JsonUtils.Serialize(NextState)},
-            {nameof(ContinuationOptions), JsonUtils.Serialize(ContinuationOptions)}
+            {nameof(ContinuationOptions), ContinuationOptions.ToString("G")}
         };
 
-        [JsonConstructor]
-        public SubAtomCreatedState(string atomId, JobContinuationOptions continuationOptions, IState nextState)
+        public SubAtomCreatedState(string atomId, IState nextState, JobContinuationOptions continuationOptions)
         {
             AtomId = atomId;
             NextState = nextState;
             ContinuationOptions = continuationOptions;
+        }
+
+        [Obsolete("Only for json serializer", true)]
+        [JsonConstructor]
+        public SubAtomCreatedState(string atomId, IState nextState, string continuationOptions)
+        {
+            AtomId = atomId;
+            NextState = nextState;
+            Enum.TryParse(continuationOptions, out JobContinuationOptions c);
+            ContinuationOptions = c;
         }
 
         public string AtomId { get; }

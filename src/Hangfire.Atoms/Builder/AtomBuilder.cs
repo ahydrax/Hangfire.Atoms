@@ -29,7 +29,7 @@ namespace Hangfire.Atoms.Builder
 
         private string CreateSubatomInternal(Expression<Action> action, IState nextState, JobContinuationOptions continuationOptions)
         {
-            var jobId = _client.Create(Job.FromExpression(action), new SubAtomCreatedState(_atomId, continuationOptions, nextState));
+            var jobId = _client.Create(Job.FromExpression(action), new SubAtomCreatedState(_atomId, nextState, continuationOptions));
             _createdSubAtoms.Add(jobId, nextState);
 
             return jobId;
