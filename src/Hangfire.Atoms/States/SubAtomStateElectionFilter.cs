@@ -46,10 +46,9 @@ namespace Hangfire.Atoms.States
             }
         }
 
-        private bool ShouldProgressAtom(JobContinuationOptions continuationOptions, IState candidateState) =>
-            continuationOptions switch
+        private bool ShouldProgressAtom(JobContinuationOptions continuationOptions, IState candidateState)
+            => continuationOptions switch
             {
-                // TODO what to do with DeletedState?
                 JobContinuationOptions.OnAnyFinishedState when candidateState.IsFinal => true,
                 JobContinuationOptions.OnlyOnSucceededState when _knownFinalStates.Contains(candidateState.Name) => true,
                 _ => false
@@ -72,22 +71,21 @@ namespace Hangfire.Atoms.States
 
             if (jobsRemainingCount == 0)
             {
-                var alreadyRun = connection.CheckIfAtomIsFinished(atomId);
-                if (alreadyRun) return;
+                var alreadyRunning = connection.CheckIfAtomIsFinished(atomId);
+                if (alreadyRunning) return;
 
                 try
                 {
-                    using (connection.AcquireDistributedLock(Atom.GenerateAtomKey(atomId), TimeSpan.Zero))
-                    {
-                        alreadyRun = connection.CheckIfAtomIsFinished(atomId);
-                        if (alreadyRun) return;
+                    using var _ = connection.AcquireDistributedLock(Atom.GenerateAtomKey(atomId), TimeSpan.Zero);
 
-                        var createdAt = context.BackgroundJob.CreatedAt;
-                        var duration = (long)(DateTime.UtcNow - createdAt).TotalMilliseconds;
-                        var succeededState = new SucceededState(null, 0, duration);
-                        _stateChanger.ChangeState(new StateChangeContext(context.Storage, connection, atomId, succeededState));
-                        _logger.Debug($"Set atom:{atomId} succeeded");
-                    }
+                    alreadyRunning = connection.CheckIfAtomIsFinished(atomId);
+                    if (alreadyRunning) return;
+
+                    var createdAt = context.BackgroundJob.CreatedAt;
+                    var duration = (long)(DateTime.UtcNow - createdAt).TotalMilliseconds;
+                    var succeededState = new SucceededState(null, 0, duration);
+                    _stateChanger.ChangeState(new StateChangeContext(context.Storage, connection, atomId, succeededState));
+                    _logger.Debug($"Set atom:{atomId} succeeded");
                 }
                 catch (DistributedLockTimeoutException)
                 {
