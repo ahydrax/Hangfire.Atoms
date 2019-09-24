@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,7 +12,7 @@
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.3</Version>
+    <Version>0.4</Version>
     <Authors>Viktor Svyatokha (@ahydrax)</Authors>
     <PackageProjectUrl>https://github.com/ahydrax/Hangfire.Atoms</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/ahydrax/Hangfire.Atoms/blob/master/LICENSE</PackageLicenseUrl>

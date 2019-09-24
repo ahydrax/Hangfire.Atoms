@@ -1,7 +1,5 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
-@using System
 @using System.Collections.Generic
-@using System.Linq
 @using Hangfire.Atoms
 @using Hangfire.Common
 @using Hangfire.Dashboard
@@ -30,26 +28,25 @@
         }
     }
 
-    Func<string, Job> GetJobData = (string jobId) =>
+    Job GetJobData(string jobId)
     {
         using (var connection = Storage.GetConnection())
         {
             return connection.GetJobData(jobId)?.Job;
         }
-    };
+    }
 
-    Func<string, int> GetJobProgressPercentage = (string jobId) =>
+    (long total, long done, long percentageDone) GetJobProgressPercentage(string jobId)
     {
-        Dictionary<string, string> subatomsProgress;
-        using (var connection = Storage.GetConnection())
+        using (var connection = Storage.GetJobStorageConnection())
         {
-            subatomsProgress = connection.GetAllEntriesFromHash(Atom.GenerateSubAtomKeys(jobId));
+            var subatomsCount = connection.GetSetCount(Atom.GenerateSubAtomKeys(jobId));
+            var remainingSubatomsCount = connection.GetSetCount(Atom.GenerateSubAtomRemainingKeys(jobId));
+            var done = subatomsCount - remainingSubatomsCount;
+            var percentageDone = done * 100 / subatomsCount;
+            return (subatomsCount, done, percentageDone);
         }
-
-        var finished = subatomsProgress.Count(x => x.Value == Atom.Finished);
-        var all = subatomsProgress.Count;
-        return finished * 100 / all;
-    };
+    }
 }
 
 <div class="row">
@@ -90,6 +87,7 @@
                                 </th>
                                 <th>@Strings.Common_Id</th>
                                 <th>@Strings.Common_Job</th>
+                                <th class="min-width text-center">Done</th>
                                 <th class="text-center" style="width: 40%">Progress</th>
                             </tr>
                         </thead>
@@ -97,12 +95,12 @@
                             @foreach (var atom in atoms)
                             {
                                 var job = GetJobData(atom);
+                                var (total, done, progress) = GetJobProgressPercentage(atom);
                                 if (job == null)
                                 {
                                     continue;
                                 }
 
-                                var progress = GetJobProgressPercentage(atom);
                                 var detailsLink = Url.To("/jobs/atoms/" + atom);
                                 <tr class="js-jobs-list-row">
                                     <td class="min-width word-break">
@@ -114,10 +112,14 @@
                                     <td>
                                         <a href="@detailsLink" class="job-method">@Html.JobName(job)</a>
                                     </td>
+                                    <td class="min-width text-center">
+                                        <a href="@detailsLink" class="job-method">@done / @total</a>
+                                    </td>
                                     <td>
                                         <div class="progress" style="margin-bottom: 0">
                                             <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="width: @progress%;">
                                                 <span class="sr-only">@progress% complete</span>
+                                                @progress%
                                             </div>
                                         </div>
                                     </td>

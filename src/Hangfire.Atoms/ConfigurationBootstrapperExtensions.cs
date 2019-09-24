@@ -23,23 +23,21 @@ namespace Hangfire.Atoms
 
         private static void SetupAtomMachinery()
         {
-            var atomRunningHandler = new AtomRunningState.Handler();
-            var subAtomHandler = new SubAtomCreatedState.Handler();
-
-            GlobalStateHandlers.Handlers.Add(atomRunningHandler);
+            GlobalStateHandlers.Handlers.Add(new AtomRunningState.Handler());
             GlobalStateHandlers.Handlers.Add(new AtomCreatedState.Handler());
-            GlobalStateHandlers.Handlers.Add(subAtomHandler);
+            GlobalStateHandlers.Handlers.Add(new SubAtomCreatedState.Handler());
             GlobalStateHandlers.Handlers.Add(new TriggerWaitingState.Handler());
 
-            GlobalJobFilters.Filters.Add(atomRunningHandler);
-            GlobalJobFilters.Filters.Add(subAtomHandler);
+            GlobalJobFilters.Filters.Add(new AtomRunningStateElectionFilter());
+            GlobalJobFilters.Filters.Add(new AtomDeletedStateElectionFilter());
+            GlobalJobFilters.Filters.Add(new SubAtomStateElectionFilter());
         }
 
         private static void SetupDashboard()
         {
             // Atoms
             DashboardRoutes.Routes.AddRazorPage("/jobs/atoms", x => new AtomsPage());
-            DashboardRoutes.Routes.AddClientBatchCommand("/jobs/atoms/delete", (client, jobId) => client.DeleteAtom(jobId));
+            DashboardRoutes.Routes.AddClientBatchCommand("/jobs/atoms/delete", (client, jobId) => client.Delete(jobId));
             DashboardRoutes.Routes.AddRazorPage("/jobs/atoms/(?<JobId>.+)", x => new AtomDetailsPage(x.Groups["JobId"].Value));
 
             JobHistoryRenderer.AddBackgroundStateColor(AtomCreatingState.StateName, "#e0f7fa");
@@ -75,21 +73,17 @@ namespace Hangfire.Atoms
         {
             if (JobStorage.Current == null) throw new InvalidOperationException("JobStorage.Current == null");
 
-            using (var connection = JobStorage.Current.GetConnection())
-            {
-                var jsc = connection as JobStorageConnection;
-                if (jsc == null)
-                    throw new InvalidOperationException(
-                        "JobStorage.Current.GetConnection() doesn't implement JobStorageConnection");
+            using var connection = JobStorage.Current.GetConnection();
+            var jsc = connection as JobStorageConnection;
+            if (jsc == null)
+                throw new InvalidOperationException(
+                    "JobStorage.Current.GetConnection() doesn't implement JobStorageConnection");
 
-                using (var tr = connection.CreateWriteTransaction())
-                {
-                    var jst = tr as JobStorageTransaction;
-                    if (jst == null)
-                        throw new InvalidOperationException(
-                            "JobStorage.Current.GetConnection().CreateWriteTransaction() doesn't implement JobStorageTransaction");
-                }
-            }
+            using var tr = connection.CreateWriteTransaction();
+            var jst = tr as JobStorageTransaction;
+            if (jst == null)
+                throw new InvalidOperationException(
+                    "JobStorage.Current.GetConnection().CreateWriteTransaction() doesn't implement JobStorageTransaction");
         }
     }
 }

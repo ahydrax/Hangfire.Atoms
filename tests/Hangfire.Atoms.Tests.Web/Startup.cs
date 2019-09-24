@@ -1,5 +1,4 @@
 ﻿using System;
-using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +8,8 @@ namespace Hangfire.Atoms.Tests.Web
 {
     public class Startup
     {
+        private const string DefaultConnectionString = @"Server=localhost;Integrated Security=true;Database=hangfire_tests";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -21,7 +22,7 @@ namespace Hangfire.Atoms.Tests.Web
             services.AddMvc();
             services.AddHangfire(configuration =>
             {
-                configuration.UseMemoryStorage();
+                configuration.UseRedisStorage("192.168.5.32");
                 configuration.UseAtoms();
             });
         }
@@ -31,9 +32,10 @@ namespace Hangfire.Atoms.Tests.Web
             app.UseDeveloperExceptionPage();
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
-                ServerCheckInterval = TimeSpan.FromSeconds(1),
-                HeartbeatInterval = TimeSpan.FromMilliseconds(500),
-                ServerTimeout = TimeSpan.FromSeconds(2),
+                ServerCheckInterval = TimeSpan.FromSeconds(10),
+                HeartbeatInterval = TimeSpan.FromSeconds(10),
+                ServerTimeout = TimeSpan.FromSeconds(15),
+                WorkerCount = 100,
                 ServerName = "ATOMS SERVER",
                 Queues = new[] { "queue1", "default", "queue2" }
             });
@@ -41,6 +43,11 @@ namespace Hangfire.Atoms.Tests.Web
             app.UseHangfireDashboard("", new DashboardOptions { StatsPollingInterval = 1000 });
             RecurringJob.AddOrUpdate("test-1", () => TestSuite.AtomTest(), Cron.Yearly, TimeZoneInfo.Utc);
             RecurringJob.AddOrUpdate("test-2", () => TestSuite.AtomTest2(), Cron.Yearly, TimeZoneInfo.Utc);
+            RecurringJob.AddOrUpdate("test-3", () => TestSuite.AtomTest3(), Cron.Yearly, TimeZoneInfo.Utc);
+            RecurringJob.AddOrUpdate("test-4", () => TestSuite.AtomTest4(), Cron.Yearly, TimeZoneInfo.Utc);
+            RecurringJob.AddOrUpdate("test-5", () => TestSuite.AtomTest5(), Cron.Yearly, TimeZoneInfo.Utc);
+            RecurringJob.AddOrUpdate("test-6", () => TestSuite.AtomTest6(), Cron.Yearly, TimeZoneInfo.Utc);
+            RecurringJob.AddOrUpdate("test-7", () => TestSuite.AtomTest7(), Cron.Yearly, TimeZoneInfo.Utc);
         }
     }
 }

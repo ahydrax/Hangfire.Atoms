@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -22,85 +20,27 @@ namespace Hangfire.Atoms.States
 
         public string AtomId { get; }
         public string Name => StateName;
-        public string Reason { get; }
+        public string Reason => string.Empty;
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
 
-        public class Handler : IStateHandler, IApplyStateFilter, IElectStateFilter
+        public class Handler : IStateHandler
         {
-            private readonly IBackgroundJobStateChanger _stateChanger;
-
-            public Handler()
-                : this(new BackgroundJobStateChanger())
-            {
-
-            }
-
-            public Handler(IBackgroundJobStateChanger stateChanger)
-            {
-                _stateChanger = stateChanger;
-            }
-
+            // ReSharper disable once MemberHidesStaticFromOuterClass
             public string StateName => AtomRunningState.StateName;
 
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                if (context.NewState is AtomRunningState)
-                {
-                    transaction.InsertToList(Atom.JobListKey, context.BackgroundJob.Id);
-                }
+                var atomId = context.BackgroundJob.Id;
+                transaction.InsertToList(Atom.JobListKey, atomId);
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                if (context.OldStateName == StateName)
-                {
-                    var jst = (JobStorageTransaction)transaction;
-                    jst.RemoveFromList(Atom.JobListKey, context.BackgroundJob.Id);
-                    jst.ExpireHash(Atom.GenerateSubAtomKeys(context.BackgroundJob.Id), context.JobExpirationTimeout);
-                }
-            }
-
-            public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
-            {
-                if (context.NewState is AtomRunningState state)
-                {
-                    var subatomIds = context.Connection.GetAllEntriesFromHash(Atom.GenerateSubAtomKeys(state.AtomId))
-                        .Select(x => x.Key)
-                        .ToList();
-
-                    foreach (var subatomId in subatomIds)
-                    {
-                        var subatomStateData = context.Connection.GetStateData(subatomId);
-                        var subatomInitialState = subatomStateData.Data[nameof(SubAtomCreatedState.NextState)];
-                        if (subatomInitialState == null) throw new InvalidOperationException("NextState is null");
-
-                        var nextState = JsonUtils.Deserialize<IState>(subatomInitialState);
-
-                        _stateChanger.ChangeState(
-                            new StateChangeContext(
-                                context.Storage,
-                                context.Connection,
-                                subatomId,
-                                nextState));
-                    }
-                }
-            }
-
-            public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
-            {
-            }
-
-            public void OnStateElection(ElectStateContext context)
-            {
-                if (context.CurrentState == ScheduledState.StateName || context.CurrentState == AwaitingState.StateName)
-                {
-                    var isAtom = context.Connection.GetJobParameter(context.BackgroundJob.Id, Atom.ParameterIsAtom) == bool.TrueString;
-                    if (isAtom)
-                    {
-                        context.CandidateState = new AtomRunningState(context.BackgroundJob.Id);
-                    }
-                }
+                var jst = (JobStorageTransaction)transaction;
+                var atomId = context.BackgroundJob.Id;
+                jst.RemoveFromList(Atom.JobListKey, atomId);
+                jst.ExpireSet(Atom.GenerateSubAtomKeys(atomId), context.JobExpirationTimeout);
             }
         }
     }

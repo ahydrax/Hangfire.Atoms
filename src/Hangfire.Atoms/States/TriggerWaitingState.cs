@@ -22,7 +22,7 @@ namespace Hangfire.Atoms.States
 
         public string TriggerName { get; }
         public string Name => StateName;
-        public string Reason { get; }
+        public string Reason => string.Empty;
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
 

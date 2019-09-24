@@ -1,20 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using Hangfire.Atoms.Builder;
 using Hangfire.States;
 
 namespace Hangfire.Atoms
 {
-    public static class Atom
+    public static partial class Atom
     {
-        public static readonly string JobListKey = "atoms";
-        public static readonly string Waiting = "waiting";
-        public static readonly string Finished = "finished";
-        public static readonly string ParameterAtomId = "AtomId";
-        public static readonly string ParameterIsAtom = "IsAtom";
-        public static readonly string ParameterRunning = "AtomRunning";
-
         public static string Enqueue(this IBackgroundJobClient client, string name, Action<IAtomBuilder> buildAtom)
         {
             var builder = new AtomBuilder(name, JobStorage.Current, client, buildAtom);
@@ -39,28 +31,6 @@ namespace Hangfire.Atoms
             return builder.Build();
         }
 
-        public static void DeleteAtom(this IBackgroundJobClient client, string atomId)
-        {
-            var jobStorage = JobStorage.Current;
-
-            using (var connection = jobStorage.GetJobStorageConnection())
-            {
-                var subAtomIds = connection.GetAllEntriesFromHash(Atom.GenerateSubAtomKeys(atomId));
-
-                using (var transaction = connection.CreateJobStorageTransaction())
-                {
-                    transaction.RemoveHash(Atom.GenerateSubAtomKeys(atomId));
-                }
-
-                foreach (var subAtomId in subAtomIds)
-                {
-                    client.Delete(subAtomId.Key);
-                }
-            }
-
-            client.Delete(atomId);
-        }
-
         public static string OnTriggerSet(this IBackgroundJobClient client, string triggerName, string name, Action<IAtomBuilder> buildAtom)
         {
             var triggerId = client.OnTriggerSet(triggerName);
@@ -72,11 +42,7 @@ namespace Hangfire.Atoms
 
         internal static string GenerateSubAtomKeys(string jobId) => "atom:subs:" + jobId;
 
-        internal static KeyValuePair<string, string>[] GenerateSubAtomStatePair(string jobId, string state)
-            => new[]
-            {
-                new KeyValuePair<string, string>(jobId, state)
-            };
+        internal static string GenerateSubAtomRemainingKeys(string jobId) => "atom:subs:left:" + jobId;
 
         [DisplayName("{0}")]
         public static void Running(string name)

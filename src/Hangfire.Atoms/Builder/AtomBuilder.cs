@@ -17,7 +17,7 @@ namespace Hangfire.Atoms.Builder
         private readonly Action<IAtomBuilder> _buildAtom;
         private readonly Dictionary<string, IState> _createdSubAtoms;
 
-        public AtomBuilder(string name, JobStorage jobStorage, IBackgroundJobClient client, Action<IAtomBuilder> buildAtom, IState initialState = null)
+        public AtomBuilder(string name, JobStorage jobStorage, IBackgroundJobClient client, Action<IAtomBuilder> buildAtom, IState? initialState = null)
         {
             _client = client;
             _atomId = _client.Create(() => Atom.Running(name), new AtomCreatingState());
@@ -85,7 +85,7 @@ namespace Hangfire.Atoms.Builder
                 _buildAtom(this);
 
                 // CREATED
-                _client.ChangeState(_atomId, new AtomCreatedState(_atomId));
+                CreateAtomState();
 
                 // RUN
                 _client.ChangeState(_atomId, _initialState);
@@ -98,12 +98,16 @@ namespace Hangfire.Atoms.Builder
                     _client.Delete(createdJobId.Key);
                 }
 
-                using (var connection = _jobStorage.GetConnection())
+                using (var connection = _jobStorage.GetJobStorageConnection())
                 {
-                    using (var tr = connection.CreateWriteTransaction())
+                    using var tr = connection.CreateJobStorageTransaction();
+                    tr.RemoveSet(Atom.GenerateSubAtomKeys(_atomId));
+                    var atomRemainingKeys = Atom.GenerateSubAtomRemainingKeys(_atomId);
+                    foreach (var activeSubatoms in _createdSubAtoms.Where(x => !x.Value.IsFinal))
                     {
-                        tr.RemoveHash(Atom.GenerateSubAtomKeys(_atomId));
+                        tr.RemoveFromSet(atomRemainingKeys, activeSubatoms.Key);
                     }
+                    tr.Commit();
                 }
 
                 _client.Delete(_atomId);
@@ -111,6 +115,22 @@ namespace Hangfire.Atoms.Builder
             }
 
             return _atomId;
+        }
+
+        private void CreateAtomState()
+        {
+            using (var connection = _jobStorage.GetConnection())
+            {
+                using var tr = connection.CreateWriteTransaction();
+                var atomRemainingKeys = Atom.GenerateSubAtomRemainingKeys(_atomId);
+                foreach (var activeSubatoms in _createdSubAtoms.Where(x => !x.Value.IsFinal))
+                {
+                    tr.AddToSet(atomRemainingKeys, activeSubatoms.Key);
+                }
+                tr.Commit();
+            }
+
+            _client.ChangeState(_atomId, new AtomCreatedState(_atomId));
         }
     }
 }

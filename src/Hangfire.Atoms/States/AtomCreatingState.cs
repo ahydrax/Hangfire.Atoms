@@ -8,9 +8,9 @@ namespace Hangfire.Atoms.States
         public static readonly string StateName = "Atom creating";
 
         public Dictionary<string, string> SerializeData() => new Dictionary<string, string>();
-        
+
         public string Name => StateName;
-        public string Reason { get; }
+        public string Reason => string.Empty;
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
     }

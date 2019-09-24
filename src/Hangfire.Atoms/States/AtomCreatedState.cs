@@ -20,7 +20,7 @@ namespace Hangfire.Atoms.States
 
         public string AtomId { get; }
         public string Name => StateName;
-        public string Reason { get; }
+        public string Reason => string.Empty;
         public bool IsFinal => false;
         public bool IgnoreJobLoadException => false;
 
@@ -30,7 +30,8 @@ namespace Hangfire.Atoms.States
 
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                context.Connection.SetJobParameter(context.BackgroundJob.Id, Atom.ParameterIsAtom, bool.TrueString);
+                var atomId = context.BackgroundJob.Id;
+                context.Connection.SetJobIsAtom(atomId);
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
