@@ -26,7 +26,7 @@ namespace Hangfire.Atoms.Dashboard
                 var continuationOption = stateData[nameof(SubAtomCreatedState.ContinuationOptions)];
                 builder.Append("<dl class=\"dl-horizontal\">");
                 builder.Append("<dt>Atom progress:</dt>");
-                builder.Append($"<dd>{continuationOption}</dd>");
+                builder.Append($"<dd><code>{continuationOption}</code></dd>");
                 builder.Append("</dl>");
             }
 
@@ -35,7 +35,9 @@ namespace Hangfire.Atoms.Dashboard
                 var state = JsonUtils.Deserialize<IState>(stateData[nameof(SubAtomCreatedState.NextState)]);
                 builder.Append("<dl class=\"dl-horizontal\">");
                 builder.Append("<dt>Next state:</dt>");
-                builder.Append($"<dd>{state.Name}</dd>");
+
+                var stateColor = JobHistoryRenderer.GetForegroundStateColor(state.Name);
+                builder.Append($"<dd><span class=\"label label-default\" style=\"background-color: {stateColor};\">{state.Name}</span></dd>");
                 builder.Append("</dl>");
             }
 
