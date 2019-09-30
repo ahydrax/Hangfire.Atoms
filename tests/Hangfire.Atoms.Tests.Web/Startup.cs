@@ -48,6 +48,9 @@ namespace Hangfire.Atoms.Tests.Web
             RecurringJob.AddOrUpdate("test-5", () => TestSuite.AtomTest5(), Cron.Yearly, TimeZoneInfo.Utc);
             RecurringJob.AddOrUpdate("test-6", () => TestSuite.AtomTest6(), Cron.Yearly, TimeZoneInfo.Utc);
             RecurringJob.AddOrUpdate("test-7", () => TestSuite.AtomTest7(), Cron.Yearly, TimeZoneInfo.Utc);
+
+            var asyncTestSuite = new AsyncTestSuite();
+            RecurringJob.AddOrUpdate("test-async", () => asyncTestSuite.AsyncAtomTest(), Cron.Yearly, TimeZoneInfo.Utc);
         }
     }
 }
