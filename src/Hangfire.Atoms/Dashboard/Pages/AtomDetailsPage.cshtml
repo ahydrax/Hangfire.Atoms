@@ -10,6 +10,7 @@
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
 @using Hangfire.States
+@using Hangfire.Storage.Monitoring
 @inherits Hangfire.Dashboard.RazorPage
 @{
     var monitor = Storage.GetMonitoringApi();
@@ -24,12 +25,21 @@
         subatomIds = connection.GetAllItemsFromSet(Atom.GenerateSubAtomKeys(JobId));
     }
 
+    var jobStub = Job.FromExpression(() => Atom.NoMethod());
+
     var subatomStates = subatomIds
         .Select(x =>
         {
             var subatomState = monitor.JobDetails(x);
-            var lastState = subatomState.History.First();
-            return (id: x, job: subatomState.Job, lastState: lastState);
+            var lastState = subatomState?.History.FirstOrDefault() ?? new StateHistoryDto
+            {
+                CreatedAt = DateTime.UtcNow,
+                StateName = DeletedState.StateName,
+                Reason = "Jod was deleted"
+            };
+            var stateJob = subatomState?.Job ?? jobStub;
+
+            return (id: x, job: stateJob, lastState: lastState);
         })
         .GroupBy(x => x.lastState.StateName)
         .OrderBy(x => x.Key)

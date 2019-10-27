@@ -48,5 +48,9 @@ namespace Hangfire.Atoms
         public static void Running(string name)
         {
         }
+
+        public static void NoMethod()
+        {
+        }
     }
 }
