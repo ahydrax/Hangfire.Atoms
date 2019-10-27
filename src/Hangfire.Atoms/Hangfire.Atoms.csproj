@@ -12,7 +12,7 @@
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.4</Version>
+    <Version>0.4.1</Version>
     <Authors>Viktor Svyatokha (@ahydrax)</Authors>
     <PackageProjectUrl>https://github.com/ahydrax/Hangfire.Atoms</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/ahydrax/Hangfire.Atoms/blob/master/LICENSE</PackageLicenseUrl>

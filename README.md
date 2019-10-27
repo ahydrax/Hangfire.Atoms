@@ -3,6 +3,12 @@
 
 Execute multiple jobs as a single atomic job.
 
+## READ THIS BEFORE UPGRADE
+If you're coming from version `<=0.3` you have to wait till your atomic jobs (in enqueued, scheduled, awaiting, etc. states) finishes as in version `0.4` data schema has been changed dramatically and this can lead to job state corruption.
+
+
+This affects only existing users. New users have not to worry about anything.
+
 ## Requirements
 * The storage you chosen must implement `JobStorageConnection` & `JobStorageTransaction`
 * NET Standard 2.0 compatible project
