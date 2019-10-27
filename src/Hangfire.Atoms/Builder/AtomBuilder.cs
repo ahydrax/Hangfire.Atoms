@@ -10,6 +10,7 @@ using Hangfire.States;
 
 namespace Hangfire.Atoms.Builder
 {
+    [PublicAPI]
     public class AtomBuilder : IAtomBuilder
     {
         private readonly string _atomId;
@@ -29,57 +30,74 @@ namespace Hangfire.Atoms.Builder
             _createdSubAtoms = new Dictionary<string, IState>();
         }
 
-        private string CreateSubatomInternal([NotNull, InstantHandle] Expression<Func<Task>> action, IState nextState, JobContinuationOptions continuationOptions)
+        protected string CreateSubatomInternal(
+            Job job,
+            IState nextState,
+            JobContinuationOptions continuationOptions)
         {
-            var jobId = _client.Create(Job.FromExpression(action), new SubAtomCreatedState(_atomId, nextState, continuationOptions));
+            var jobId = _client.Create(job, new SubAtomCreatedState(_atomId, nextState, continuationOptions));
             _createdSubAtoms.Add(jobId, nextState);
-
-            return jobId;
-        }
-        private string CreateSubatomInternal([NotNull, InstantHandle] Expression<Action> action, IState nextState, JobContinuationOptions continuationOptions)
-        {
-            var jobId = _client.Create(Job.FromExpression(action), new SubAtomCreatedState(_atomId, nextState, continuationOptions));
-            _createdSubAtoms.Add(jobId, nextState);
-
             return jobId;
         }
 
-        public string Enqueue([NotNull, InstantHandle] Expression<Action> action,
+        protected string CreateSubatomInternal(
+            [InstantHandle] Expression<Func<Task>> action,
+            IState nextState,
+            JobContinuationOptions continuationOptions)
+            => CreateSubatomInternal(Job.FromExpression(action), nextState, continuationOptions);
+
+        protected string CreateSubatomInternal(
+            [InstantHandle] Expression<Action> action,
+            IState nextState,
+            JobContinuationOptions continuationOptions)
+            => CreateSubatomInternal(Job.FromExpression(action), nextState, continuationOptions);
+
+        public string Enqueue(
+            [InstantHandle] Expression<Action> action,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
             var state = new EnqueuedState();
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string Enqueue([NotNull, InstantHandle] Expression<Func<Task>> action,
+        public string Enqueue(
+            [InstantHandle] Expression<Func<Task>> action,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
             var state = new EnqueuedState();
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string Schedule([NotNull, InstantHandle] Expression<Action> action, DateTime enqueueAt,
+        public string Schedule(
+            [InstantHandle] Expression<Action> action,
+            DateTime enqueueAt,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
             var state = new ScheduledState(enqueueAt);
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string Schedule([NotNull, InstantHandle] Expression<Func<Task>> action, DateTime enqueueAt,
+        public string Schedule(
+            [InstantHandle] Expression<Func<Task>> action, 
+            DateTime enqueueAt,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
             var state = new ScheduledState(enqueueAt);
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string Schedule([NotNull, InstantHandle] Expression<Action> action, TimeSpan enqueueIn,
+        public string Schedule(
+            [InstantHandle] Expression<Action> action, 
+            TimeSpan enqueueIn,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
             var state = new ScheduledState(enqueueIn);
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string Schedule([NotNull, InstantHandle] Expression<Func<Task>> action, TimeSpan enqueueIn,
+        public string Schedule(
+            [InstantHandle] Expression<Func<Task>> action,
+            TimeSpan enqueueIn,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
             var state = new ScheduledState(enqueueIn);
@@ -92,33 +110,41 @@ namespace Hangfire.Atoms.Builder
             CreateSubatomInternal(() => Trigger.On(triggerName), state, JobContinuationOptions.OnAnyFinishedState);
         }
 
-        public string OnTriggerSet(string triggerName, [NotNull, InstantHandle] Expression<Action> action,
+        public string OnTriggerSet(
+            string triggerName, 
+            [InstantHandle] Expression<Action> action,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
             var state = new TriggerWaitingState(triggerName);
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string OnTriggerSet(string triggerName, [NotNull, InstantHandle] Expression<Func<Task>> action,
+        public string OnTriggerSet(
+            string triggerName,
+            [InstantHandle] Expression<Func<Task>> action,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
             var state = new TriggerWaitingState(triggerName);
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string ContinueJobWith(string parentId, [NotNull, InstantHandle] Expression<Action> action,
-            JobContinuationOptions continuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+        public string ContinueJobWith(
+            string parentId,
+            [InstantHandle] Expression<Action> action,
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
-            var state = new AwaitingState(parentId, new EnqueuedState(), continuationOptions);
+            var state = new AwaitingState(parentId, new EnqueuedState(), jobContinuationOptions);
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
-        public string ContinueJobWith(string parentId, [NotNull, InstantHandle] Expression<Func<Task>> action,
-            JobContinuationOptions continuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+        public string ContinueJobWith(
+            string parentId,
+            [InstantHandle] Expression<Func<Task>> action,
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
         {
-            var state = new AwaitingState(parentId, new EnqueuedState(), continuationOptions);
+            var state = new AwaitingState(parentId, new EnqueuedState(), jobContinuationOptions);
             return CreateSubatomInternal(action, state, atomProgress);
         }
 

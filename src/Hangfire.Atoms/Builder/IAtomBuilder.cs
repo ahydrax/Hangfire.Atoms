@@ -5,35 +5,59 @@ using Hangfire.Annotations;
 
 namespace Hangfire.Atoms.Builder
 {
+    [PublicAPI]
     public interface IAtomBuilder
     {
-        string Enqueue([NotNull, InstantHandle] Expression<Action> action, 
-            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
-        string Enqueue([NotNull, InstantHandle] Expression<Func<Task>> action, 
-            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
-
-        string Schedule([NotNull, InstantHandle] Expression<Action> action, DateTime enqueueAt, 
-            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
-        string Schedule([NotNull, InstantHandle] Expression<Func<Task>> action, DateTime enqueueAt, 
+        string Enqueue(
+            [InstantHandle] Expression<Action> action,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
-        string Schedule([NotNull, InstantHandle] Expression<Action> action, TimeSpan enqueueIn, 
+        string Enqueue(
+            [InstantHandle] Expression<Func<Task>> action,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
-        string Schedule([NotNull, InstantHandle] Expression<Func<Task>> action, TimeSpan enqueueIn, 
+
+        string Schedule(
+            [InstantHandle] Expression<Action> action,
+            DateTime enqueueAt,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string Schedule(
+            [InstantHandle] Expression<Func<Task>> action,
+            DateTime enqueueAt,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string Schedule(
+            [InstantHandle] Expression<Action> action,
+            TimeSpan enqueueIn,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string Schedule(
+            [InstantHandle] Expression<Func<Task>> action,
+            TimeSpan enqueueIn,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
         void WaitForTriggerSet(string triggerName);
 
-        string OnTriggerSet(string triggerName, [NotNull, InstantHandle] Expression<Action> action,
-            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
-        string OnTriggerSet(string triggerName, [NotNull, InstantHandle] Expression<Func<Task>> action,
+        string OnTriggerSet(
+            string triggerName,
+            [InstantHandle] Expression<Action> action,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
-        string ContinueJobWith(string parentId, [NotNull, InstantHandle] Expression<Action> action, 
-            JobContinuationOptions continuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+        string OnTriggerSet(
+            string triggerName,
+            [InstantHandle] Expression<Func<Task>> action,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
-        string ContinueJobWith(string parentId, [NotNull, InstantHandle] Expression<Func<Task>> action, 
-            JobContinuationOptions continuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+
+        string ContinueJobWith(
+            string parentId,
+            [InstantHandle] Expression<Action> action,
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string ContinueJobWith(
+            string parentId,
+            [InstantHandle] Expression<Func<Task>> action,
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
     }
 }
