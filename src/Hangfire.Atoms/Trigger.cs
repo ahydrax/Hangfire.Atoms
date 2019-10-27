@@ -20,18 +20,35 @@ namespace Hangfire.Atoms
         public static void SetTrigger(this IStorageConnection connection, string triggerName)
         {
             var jsc = (JobStorageConnection)connection;
-            var triggerKey = GenerateTriggerKey(triggerName);
-            var jobIds = jsc.GetAllItemsFromList(triggerKey);
-
             var client = new BackgroundJobClient();
+
+            SetTriggerInternal(client, jsc, triggerName);
+        }
+
+        [PublicAPI]
+        public static void SetTrigger(this IBackgroundJobClient client, string triggerName)
+        {
+            var storage = JobStorage.Current;
+            using var connection = storage.GetJobStorageConnection();
+
+            SetTriggerInternal(client, connection, triggerName);
+        }
+
+        private static void SetTriggerInternal(
+            IBackgroundJobClient client,
+            JobStorageConnection connection,
+            string triggerName)
+        {
+            var triggerKey = GenerateTriggerKey(triggerName);
+            var jobIds = connection.GetAllItemsFromList(triggerKey);
+
             try
             {
-                using (connection.AcquireDistributedLock(triggerKey, TimeSpan.Zero))
+                using var _ = connection.AcquireDistributedLock(triggerKey, TimeSpan.Zero);
+
+                foreach (var jobId in jobIds)
                 {
-                    foreach (var jobId in jobIds)
-                    {
-                        client.ChangeState(jobId, new EnqueuedState());
-                    }
+                    client.ChangeState(jobId, new EnqueuedState());
                 }
             }
             catch (DistributedLockTimeoutException)
