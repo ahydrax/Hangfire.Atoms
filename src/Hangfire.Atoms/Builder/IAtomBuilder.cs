@@ -59,5 +59,12 @@ namespace Hangfire.Atoms.Builder
             [InstantHandle] Expression<Func<Task>> action,
             JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string ContinueJobWith<T>(
+            string parentId, 
+            [InstantHandle] Expression<Func<T, Task>> action, 
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+        );
     }
 }
