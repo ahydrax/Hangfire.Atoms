@@ -18,7 +18,11 @@ namespace Hangfire.Atoms.Builder
 
         string Enqueue<T>(
             [InstantHandle] Expression<Func<T, Task>> action, 
-            JobContinuationOptions atomProgress);
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string Enqueue<T>(
+            [InstantHandle] Expression<Action<T>> action, 
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
         string Schedule(
             [InstantHandle] Expression<Action> action,
@@ -69,6 +73,11 @@ namespace Hangfire.Atoms.Builder
             [InstantHandle] Expression<Func<T, Task>> action, 
             JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
-        );
+
+        string ContinueJobWith<T>(
+            string parentId,
+            [InstantHandle] Expression<Action<T>> action,
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
     }
 }
