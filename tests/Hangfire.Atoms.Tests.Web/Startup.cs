@@ -22,12 +22,12 @@ namespace Hangfire.Atoms.Tests.Web
             services.AddMvc();
             services.AddHangfire(configuration =>
             {
-                configuration.UseRedisStorage("127.0.0.1");
+                configuration.UseRedisStorage("192.168.5.32");
                 configuration.UseAtoms();
             });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDeveloperExceptionPage();
             app.UseHangfireServer(new BackgroundJobServerOptions
