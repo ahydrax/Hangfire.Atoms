@@ -142,8 +142,35 @@ namespace Hangfire.Atoms.Tests.Web
 
             client.ContinueJobWith(atomId, () => Done());
         }
+        
+        public static void AtomTest8()
+        {
+            var client = new BackgroundJobClient(JobStorage.Current);
+
+            var atomId = client.Schedule($"Atom test-8", TimeSpan.FromSeconds(3), builder =>
+            {
+                for (var i = 0; i < 50; i++)
+                {
+                    builder.Enqueue<AtomTask>(task => task.Done());
+                    var job2 = builder.Enqueue(() => Wait(1000));
+                    var job3 = builder.ContinueJobWith<AtomTask>(job2, task => task.Wait(500));
+                }
+            });
+
+            client.ContinueJobWith(atomId, () => Done());
+        }
 
         [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
         public static void FailFast() => throw new ApplicationException("Test OK");
+    }
+
+    public class AtomTask
+    {
+        public Task<string> Done() => Task.FromResult("ALL DONE");
+
+        public void Wait(int milliseconds)
+        {
+            Thread.Sleep(milliseconds);
+        }
     }
 }

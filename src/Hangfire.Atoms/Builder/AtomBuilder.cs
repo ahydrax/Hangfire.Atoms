@@ -148,6 +148,46 @@ namespace Hangfire.Atoms.Builder
             return CreateSubatomInternal(action, state, atomProgress);
         }
 
+        public string Enqueue<T>(
+            [InstantHandle] Expression<Func<T, Task>> action, 
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
+        {
+            var job = Job.FromExpression(action);
+            var nextState = new EnqueuedState();
+            return CreateSubatomInternal(job, nextState, atomProgress);
+        }
+        
+        public string Enqueue<T>(
+            [InstantHandle] Expression<Action<T>> action, 
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
+        {
+            var job = Job.FromExpression(action);
+            var nextState = new EnqueuedState();
+            return CreateSubatomInternal(job, nextState, atomProgress);
+        }
+
+        public string ContinueJobWith<T>(
+            string parentId, 
+            [InstantHandle] Expression<Func<T, Task>> action, 
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
+        {
+            var job = Job.FromExpression(action);
+            var nextState = new AwaitingState(parentId, new EnqueuedState(), jobContinuationOptions);
+            return CreateSubatomInternal(job, nextState, atomProgress);
+        }
+        
+        public string ContinueJobWith<T>(
+            string parentId, 
+            [InstantHandle] Expression<Action<T>> action, 
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState)
+        {
+            var job = Job.FromExpression(action);
+            var nextState = new AwaitingState(parentId, new EnqueuedState(), jobContinuationOptions);
+            return CreateSubatomInternal(job, nextState, atomProgress);
+        }
+
         public string Build()
         {
             try

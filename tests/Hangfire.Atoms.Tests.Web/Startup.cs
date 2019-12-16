@@ -22,7 +22,7 @@ namespace Hangfire.Atoms.Tests.Web
             services.AddMvc();
             services.AddHangfire(configuration =>
             {
-                configuration.UseRedisStorage("192.168.5.32");
+                configuration.UseRedisStorage("127.0.0.1");
                 configuration.UseAtoms();
             });
         }
@@ -48,6 +48,7 @@ namespace Hangfire.Atoms.Tests.Web
             RecurringJob.AddOrUpdate("test-5", () => TestSuite.AtomTest5(), Cron.Yearly, TimeZoneInfo.Utc);
             RecurringJob.AddOrUpdate("test-6", () => TestSuite.AtomTest6(), Cron.Yearly, TimeZoneInfo.Utc);
             RecurringJob.AddOrUpdate("test-7", () => TestSuite.AtomTest7(), Cron.Yearly, TimeZoneInfo.Utc);
+            RecurringJob.AddOrUpdate("test-8", () => TestSuite.AtomTest8(), Cron.Yearly, TimeZoneInfo.Utc);
 
             var asyncTestSuite = new AsyncTestSuite();
             RecurringJob.AddOrUpdate("test-async", () => asyncTestSuite.AsyncAtomTest(), Cron.Yearly, TimeZoneInfo.Utc);
