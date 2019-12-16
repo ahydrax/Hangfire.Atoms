@@ -12,11 +12,11 @@
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.4.1</Version>
-    <Authors>Viktor Svyatokha (@ahydrax)</Authors>
+    <Version>0.4.2</Version>
+    <Authors>Hangfire.Atoms contributors</Authors>
     <PackageProjectUrl>https://github.com/ahydrax/Hangfire.Atoms</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/ahydrax/Hangfire.Atoms/blob/master/LICENSE</PackageLicenseUrl>
-    <Copyright>Viktor Svyatokha (@ahydrax)</Copyright>
+    <Copyright>Hangfire.Atoms contributors</Copyright>
     <RepositoryUrl>https://github.com/ahydrax/Hangfire.Atoms</RepositoryUrl>
     <PackageTags>hangfire jobs</PackageTags>
   </PropertyGroup>
