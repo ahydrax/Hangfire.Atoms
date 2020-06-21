@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Hangfire.States;
 
 namespace Hangfire.Atoms.Builder
 {
@@ -11,9 +12,19 @@ namespace Hangfire.Atoms.Builder
         string Enqueue(
             [InstantHandle] Expression<Action> action,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+        
+        string Enqueue(
+            [InstantHandle] Expression<Action> action,
+            IState state,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
         string Enqueue(
             [InstantHandle] Expression<Func<Task>> action,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string Enqueue(
+            [InstantHandle] Expression<Func<Task>> action,
+            IState state,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
         string Enqueue<T>(
@@ -21,7 +32,17 @@ namespace Hangfire.Atoms.Builder
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
         string Enqueue<T>(
+            [InstantHandle] Expression<Func<T, Task>> action,
+            IState state,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string Enqueue<T>(
             [InstantHandle] Expression<Action<T>> action, 
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string Enqueue<T>(
+            [InstantHandle] Expression<Action<T>> action,
+            IState state,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
         string Schedule(
@@ -64,7 +85,21 @@ namespace Hangfire.Atoms.Builder
 
         string ContinueJobWith(
             string parentId,
+            [InstantHandle] Expression<Action> action,
+            IState state,
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string ContinueJobWith(
+            string parentId,
             [InstantHandle] Expression<Func<Task>> action,
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string ContinueJobWith(
+            string parentId,
+            [InstantHandle] Expression<Func<Task>> action,
+            IState state,
             JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
@@ -75,8 +110,22 @@ namespace Hangfire.Atoms.Builder
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
 
         string ContinueJobWith<T>(
+            string parentId, 
+            [InstantHandle] Expression<Func<T, Task>> action,
+            IState state,
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string ContinueJobWith<T>(
             string parentId,
             [InstantHandle] Expression<Action<T>> action,
+            JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
+            JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
+
+        string ContinueJobWith<T>(
+            string parentId,
+            [InstantHandle] Expression<Action<T>> action,
+            IState state,
             JobContinuationOptions jobContinuationOptions = JobContinuationOptions.OnlyOnSucceededState,
             JobContinuationOptions atomProgress = JobContinuationOptions.OnlyOnSucceededState);
     }
