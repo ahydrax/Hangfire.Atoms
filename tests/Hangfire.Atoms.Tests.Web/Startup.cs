@@ -1,4 +1,5 @@
 ﻿using System;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +23,9 @@ namespace Hangfire.Atoms.Tests.Web
             services.AddMvc();
             services.AddHangfire(configuration =>
             {
-                configuration.UseRedisStorage("192.168.5.32");
+                configuration.UsePostgreSqlStorage(Environment.GetEnvironmentVariable("Hangfire_PostgreSql_ConnectionString"));
+                configuration.UsePostgreSqlMetrics();
+                //configuration.UseRedisStorage("192.168.5.32");
                 configuration.UseAtoms();
             });
         }
@@ -35,7 +38,7 @@ namespace Hangfire.Atoms.Tests.Web
                 ServerCheckInterval = TimeSpan.FromSeconds(10),
                 HeartbeatInterval = TimeSpan.FromSeconds(10),
                 ServerTimeout = TimeSpan.FromSeconds(15),
-                WorkerCount = 100,
+                WorkerCount = 400,
                 ServerName = "ATOMS SERVER",
                 Queues = new[] { "queue1", "default", "queue2" }
             });
@@ -52,6 +55,7 @@ namespace Hangfire.Atoms.Tests.Web
 
             var asyncTestSuite = new AsyncTestSuite();
             RecurringJob.AddOrUpdate("test-async", () => asyncTestSuite.AsyncAtomTest(), Cron.Yearly, TimeZoneInfo.Utc);
+            RecurringJob.AddOrUpdate("test-async-2", () => asyncTestSuite.AsyncAtomTest2(), Cron.Yearly, TimeZoneInfo.Utc);
         }
     }
 }

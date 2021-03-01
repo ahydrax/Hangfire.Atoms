@@ -7,6 +7,8 @@ namespace Hangfire.Atoms.Tests.Web
     {
         public async Task AsyncAtomTest()
         {
+            await Task.Yield();
+
             var client = new BackgroundJobClient(JobStorage.Current);
 
             var atomId = client.Enqueue("atom-async", builder =>
@@ -21,11 +23,42 @@ namespace Hangfire.Atoms.Tests.Web
             client.ContinueJobWith(atomId, () => Done());
         }
 
+        public async Task AsyncAtomTest2()
+        {
+            await Task.Yield();
+
+            var client = new BackgroundJobClient(JobStorage.Current);
+
+            var atomId = client.Enqueue("atom-async", builder =>
+            {
+                for (var i = 0; i < 150; i++)
+                {
+                    builder.Enqueue(() => AsyncWaitOrException(1000));
+                }
+            });
+
+            client.ContinueJobWith(atomId, () => Done());
+        }
+
         public async Task AsyncWait(int wait)
         {
             await Task.Delay(wait);
         }
-        
+
+        public async Task AsyncWaitOrException(int wait)
+        {
+            var r = new Random();
+
+            if (0.5 > r.NextDouble())
+            {
+                await Task.Delay(wait);
+            }
+            else
+            {
+                throw new Exception("Test OK");
+            }
+        }
+
         public static string Done() => "DONE";
     }
 }

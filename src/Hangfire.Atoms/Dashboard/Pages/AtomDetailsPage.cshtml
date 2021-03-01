@@ -14,7 +14,8 @@
 @inherits Hangfire.Dashboard.RazorPage
 @{
     var monitor = Storage.GetMonitoringApi();
-    var job = monitor.JobDetails(JobId);
+    var jobId = JobId;
+    var job = monitor.JobDetails(jobId);
     var title = job?.Job != null ? Html.JobName(job.Job) : Strings.Common_Job;
 
     Layout = new LayoutPage(title);
@@ -22,7 +23,7 @@
     HashSet<string> subatomIds;
     using (var connection = Storage.GetJobStorageConnection())
     {
-        subatomIds = connection.GetAllItemsFromSet(Atom.GenerateSubAtomKeys(JobId));
+        subatomIds = connection.GetAllItemsFromSet(Atom.GenerateSubAtomKeys(jobId));
     }
 
     var jobStub = Job.FromExpression(() => Atom.NoMethod());
@@ -64,7 +65,7 @@
         @if (job == null)
         {
             <div class="alert alert-warning">
-                @String.Format(Strings.JobDetailsPage_JobExpired, JobId)
+                @String.Format(Strings.JobDetailsPage_JobExpired, jobId)
             </div>
         }
         else
@@ -80,7 +81,7 @@
                 <div class="job-snippet-code">
                     <dl class="dl-horizontal">
                         <dt>@Strings.Common_Id</dt>
-                        <dd>@Url.JobIdLink(JobId)</dd>
+                        <dd>@Url.JobIdLink(jobId)</dd>
                         <dt>@Strings.Common_Created</dt>
                         <dd>@Html.LocalTime(job.CreatedAt ?? DateTime.UtcNow)</dd>
                         <dt>@Strings.NavigationMenu_Jobs</dt>
