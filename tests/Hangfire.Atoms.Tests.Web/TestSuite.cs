@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire.States;
 
 namespace Hangfire.Atoms.Tests.Web
 {
@@ -154,6 +155,23 @@ namespace Hangfire.Atoms.Tests.Web
                     builder.Enqueue<AtomTask>(task => task.Done());
                     var job2 = builder.Enqueue(() => Wait(1000));
                     var job3 = builder.ContinueJobWith<AtomTask>(job2, task => task.Wait(500));
+                }
+            });
+
+            client.ContinueJobWith(atomId, () => Done());
+        }
+
+        public static void AtomTest9()
+        {
+            var client = new BackgroundJobClient(JobStorage.Current);
+
+            var atomId = client.Schedule("Atom test-9", TimeSpan.FromSeconds(3), builder =>
+            {
+                for (var i = 0; i < 50; i++)
+                {
+                    builder.Enqueue<AtomTask>(task => task.Done());
+                    var job2 = builder.Enqueue(() => Wait(1000), new EnqueuedState("queue2"));
+                    var job3 = builder.ContinueJobWith<AtomTask>(job2, task => task.Wait(500), new EnqueuedState("queue2"));
                 }
             });
 
