@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Setup MSBuild Path
-      uses: warrenbuckley/Setup-MSBuild@v1
+      uses: microsoft/setup-msbuild@v1.1
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
