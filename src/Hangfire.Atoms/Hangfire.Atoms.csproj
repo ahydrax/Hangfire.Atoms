@@ -17,9 +17,22 @@
 
     <ItemGroup>
         <PackageReference Include="Hangfire.Core" Version="[1.7.19,1.8)" />
-        <PackageReference Include="RazorGenerator.MsBuild" Version="2.4.7" PrivateAssets="All" />
-        <PackageReference Include="RazorGenerator.Templating" Version="2.4.7" PrivateAssets="All" />
+        <PackageReference Include="RazorGenerator.MsBuild" Version="2.5.0" PrivateAssets="All" />
     </ItemGroup>
+
+    <!-- Full MSBuild is required to generate Razor classes -->
+    <PropertyGroup>
+        <MSBuild14FullPath>$(MSBuildProgramFiles32)\MSBuild\14.0\bin\MSBuild.exe</MSBuild14FullPath>
+        <MSBuildCurrentFullPath>$(MSBuildBinPath)\MSBuild.exe</MSBuildCurrentFullPath>
+        <RazorProjectFile>Razor.build</RazorProjectFile>
+        <InnerTargets>GenerateRazorClasses;Build</InnerTargets>
+    </PropertyGroup>
+
+    <Target Name="GenerateRazorClasses">
+        <Exec Command="&quot;$(MSBuildCurrentFullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuildCurrentFullPath)')" />
+        <Exec Command="&quot;$(MSBuild14FullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuild14FullPath)') and !Exists('$(MSBuildCurrentFullPath)')" />
+        <Warning Text="Classes for Razor files (*.cshtml) weren't re-generated: couldn't find the '$(MSBuild14FullPath)' or '$(MSBuildCurrentFullPath)' file" Condition="!Exists('$(MSBuild14FullPath)') and !Exists('$(MSBuildCurrentFullPath)')" />
+    </Target>
 
     <ItemGroup>
         <Compile Update="Dashboard\Pages\AtomsDetailsPage.cshtml.cs">
