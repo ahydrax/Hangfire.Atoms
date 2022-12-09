@@ -6,10 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HangFire" Version="1.7.19" />
-    <PackageReference Include="Hangfire.Core" Version="1.7.19" />
-    <PackageReference Include="Hangfire.PostgreSql.ahydrax" Version="1.7.3" />
-    <PackageReference Include="Hangfire.Redis.StackExchange" Version="1.8.4" />
+    <PackageReference Include="HangFire" Version="1.7.32" />
+    <PackageReference Include="Hangfire.Core" Version="1.7.32" />
+    <PackageReference Include="Hangfire.PostgreSql.ahydrax" Version="1.7.5" />
+    <PackageReference Include="Hangfire.Redis.StackExchange" Version="1.8.6" />
   </ItemGroup>
 
   <ItemGroup>
