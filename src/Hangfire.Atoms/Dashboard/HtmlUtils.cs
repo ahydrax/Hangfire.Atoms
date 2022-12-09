@@ -8,6 +8,24 @@ namespace Hangfire.Atoms.Dashboard
             => new NonEscapedString($"<a href=\"{helper.JobDetails(jobId)}\">{jobId}</a>");
 
         public static NonEscapedString AtomLink(this HtmlHelper helper, string jobAtomId)
-            => new NonEscapedString($"<a href=\"/jobs/atoms/{jobAtomId}\">{jobAtomId}</a>");
+        {
+            var url = GetUrlHelper(helper);
+            var href = url.To($"/jobs/atoms/{jobAtomId}");
+            return new NonEscapedString($"<a href=\"{href}\">{jobAtomId}</a>");
+        }
+
+        private static UrlHelper GetUrlHelper(this HtmlHelper htmlHelper)
+        {
+            var page = new EmptyPage();
+            _ = htmlHelper.RenderPartial(page);
+            return page.Url;
+        }
+
+        private class EmptyPage : RazorPage
+        {
+            public override void Execute()
+            {
+            }
+        }
     }
 }
