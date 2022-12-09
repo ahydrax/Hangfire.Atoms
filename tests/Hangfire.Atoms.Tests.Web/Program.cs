@@ -19,19 +19,18 @@ builder.Services.AddHangfire(configuration =>
 
 builder.Services.AddHangfireServer();
 
-
 var app = builder.Build();
 
+const string dashboardLocation = "/hangfire-test"; // made for UI route tests
 app.MapGet("/", context =>
 {
-    context.Response.Redirect("/hangfire-test");
+    context.Response.Redirect(dashboardLocation);
     return Task.CompletedTask;
 });
 
-
 app.UseDeveloperExceptionPage();
 
-app.UseHangfireDashboard("/hangfire-test", new DashboardOptions { StatsPollingInterval = 1000 });
+app.UseHangfireDashboard(dashboardLocation, new DashboardOptions { StatsPollingInterval = 1000 });
 RecurringJob.AddOrUpdate("test-1", () => TestSuite.AtomTest(), Cron.Yearly, TimeZoneInfo.Utc);
 RecurringJob.AddOrUpdate("test-2", () => TestSuite.AtomTest2(), Cron.Yearly, TimeZoneInfo.Utc);
 RecurringJob.AddOrUpdate("test-3", () => TestSuite.AtomTest3(), Cron.Yearly, TimeZoneInfo.Utc);
