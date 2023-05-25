@@ -33,7 +33,7 @@ namespace Hangfire.Atoms.States
                 if (isAtom) // we deal with atom itself
                 {
                     var atomId = context.BackgroundJob.Id;
-                    DeleteAsAtom(jsc, atomId);
+                    DeleteAsAtom(jsc, context.Storage, atomId);
                 }
                 else // it's just subatom
                 {
@@ -48,13 +48,13 @@ namespace Hangfire.Atoms.States
             }
         }
 
-        private void DeleteAsAtom(JobStorageConnection jsc, string atomId)
+        private void DeleteAsAtom(JobStorageConnection jsc, JobStorage storage, string atomId)
         {
             var subatomIds = jsc.GetAllItemsFromSet(Atom.GenerateSubAtomKeys(atomId));
 
             foreach (var subatomId in subatomIds)
             {
-                var context = new StateChangeContext(JobStorage.Current, jsc, subatomId, new DeletedState());
+                var context = new StateChangeContext(storage, jsc, subatomId, new DeletedState());
                 _stateChanger.ChangeState(context);
             }
         }

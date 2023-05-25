@@ -31,17 +31,17 @@ app.MapGet("/", context =>
 app.UseDeveloperExceptionPage();
 
 app.UseHangfireDashboard(dashboardLocation, new DashboardOptions { StatsPollingInterval = 1000 });
-RecurringJob.AddOrUpdate("test-1", () => TestSuite.AtomTest(), Cron.Yearly, TimeZoneInfo.Utc);
-RecurringJob.AddOrUpdate("test-2", () => TestSuite.AtomTest2(), Cron.Yearly, TimeZoneInfo.Utc);
-RecurringJob.AddOrUpdate("test-3", () => TestSuite.AtomTest3(), Cron.Yearly, TimeZoneInfo.Utc);
-RecurringJob.AddOrUpdate("test-4", () => TestSuite.AtomTest4(), Cron.Yearly, TimeZoneInfo.Utc);
-RecurringJob.AddOrUpdate("test-5", () => TestSuite.AtomTest5(), Cron.Yearly, TimeZoneInfo.Utc);
-RecurringJob.AddOrUpdate("test-6", () => TestSuite.AtomTest6(), Cron.Yearly, TimeZoneInfo.Utc);
-RecurringJob.AddOrUpdate("test-7", () => TestSuite.AtomTest7(), Cron.Yearly, TimeZoneInfo.Utc);
-RecurringJob.AddOrUpdate("test-8", () => TestSuite.AtomTest8(), Cron.Yearly, TimeZoneInfo.Utc);
+RecurringJob.AddOrUpdate("test-1", () => TestSuite.AtomTest(), Cron.Yearly, new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+RecurringJob.AddOrUpdate("test-2", () => TestSuite.AtomTest2(), Cron.Yearly, new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+RecurringJob.AddOrUpdate("test-3", () => TestSuite.AtomTest3(), Cron.Yearly, new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+RecurringJob.AddOrUpdate("test-4", () => TestSuite.AtomTest4(), Cron.Yearly, new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+RecurringJob.AddOrUpdate("test-5", () => TestSuite.AtomTest5(), Cron.Yearly, new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+RecurringJob.AddOrUpdate("test-6", () => TestSuite.AtomTest6(), Cron.Yearly, new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+RecurringJob.AddOrUpdate("test-7", () => TestSuite.AtomTest7(), Cron.Yearly, new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+RecurringJob.AddOrUpdate("test-8", () => TestSuite.AtomTest8(), Cron.Yearly, new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
 var asyncTestSuite = new AsyncTestSuite();
-RecurringJob.AddOrUpdate("test-async", () => asyncTestSuite.AsyncAtomTest(), Cron.Yearly, TimeZoneInfo.Utc);
-RecurringJob.AddOrUpdate("test-async-2", () => asyncTestSuite.AsyncAtomTest2(), Cron.Yearly, TimeZoneInfo.Utc);
+RecurringJob.AddOrUpdate("test-async", () => asyncTestSuite.AsyncAtomTest(), Cron.Yearly, new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+RecurringJob.AddOrUpdate("test-async-2", () => asyncTestSuite.AsyncAtomTest2(), Cron.Yearly, new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
 app.Run();

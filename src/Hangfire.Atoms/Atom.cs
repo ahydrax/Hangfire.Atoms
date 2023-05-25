@@ -7,34 +7,34 @@ namespace Hangfire.Atoms
 {
     public static partial class Atom
     {
-        public static string Enqueue(this IBackgroundJobClient client, string name, Action<IAtomBuilder> buildAtom)
+        public static string Enqueue(this IBackgroundJobClientV2 client, string name, Action<IAtomBuilder> buildAtom)
         {
-            var builder = new AtomBuilder(name, JobStorage.Current, client, buildAtom);
+            var builder = new AtomBuilder(name, client.Storage, client, buildAtom);
             return builder.Build();
         }
 
-        public static string Schedule(this IBackgroundJobClient client, string name, TimeSpan enqueueIn, Action<IAtomBuilder> buildAtom)
+        public static string Schedule(this IBackgroundJobClientV2 client, string name, TimeSpan enqueueIn, Action<IAtomBuilder> buildAtom)
         {
-            var builder = new AtomBuilder(name, JobStorage.Current, client, buildAtom, new ScheduledState(enqueueIn));
+            var builder = new AtomBuilder(name, client.Storage, client, buildAtom, new ScheduledState(enqueueIn));
             return builder.Build();
         }
 
-        public static string Schedule(this IBackgroundJobClient client, string name, DateTime enqueueAt, Action<IAtomBuilder> buildAtom)
+        public static string Schedule(this IBackgroundJobClientV2 client, string name, DateTime enqueueAt, Action<IAtomBuilder> buildAtom)
         {
-            var builder = new AtomBuilder(name, JobStorage.Current, client, buildAtom, new ScheduledState(enqueueAt));
+            var builder = new AtomBuilder(name, client.Storage, client, buildAtom, new ScheduledState(enqueueAt));
             return builder.Build();
         }
 
-        public static string ContinueJobWith(this IBackgroundJobClient client, string parentId, string name, Action<IAtomBuilder> buildAtom)
+        public static string ContinueJobWith(this IBackgroundJobClientV2 client, string parentId, string name, Action<IAtomBuilder> buildAtom)
         {
-            var builder = new AtomBuilder(name, JobStorage.Current, client, buildAtom, new AwaitingState(parentId));
+            var builder = new AtomBuilder(name, client.Storage, client, buildAtom, new AwaitingState(parentId));
             return builder.Build();
         }
 
-        public static string OnTriggerSet(this IBackgroundJobClient client, string triggerName, string name, Action<IAtomBuilder> buildAtom)
+        public static string OnTriggerSet(this IBackgroundJobClientV2 client, string triggerName, string name, Action<IAtomBuilder> buildAtom)
         {
             var triggerId = client.OnTriggerSet(triggerName);
-            var builder = new AtomBuilder(name, JobStorage.Current, client, buildAtom, new AwaitingState(triggerId));
+            var builder = new AtomBuilder(name, client.Storage, client, buildAtom, new AwaitingState(triggerId));
             return builder.Build();
         }
 

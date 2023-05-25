@@ -1,10 +1,8 @@
-﻿using System;
-using Hangfire.Annotations;
+﻿using Hangfire.Annotations;
 using Hangfire.Atoms.Dashboard;
 using Hangfire.Atoms.Dashboard.Pages;
 using Hangfire.Atoms.States;
 using Hangfire.Dashboard;
-using Hangfire.Storage;
 
 namespace Hangfire.Atoms
 {
@@ -13,8 +11,6 @@ namespace Hangfire.Atoms
         [PublicAPI]
         public static IGlobalConfiguration UseAtoms(this IGlobalConfiguration configuration)
         {
-            ThrowIfStorageIsNotSupported();
-
             SetupAtomMachinery();
             SetupDashboard();
 
@@ -67,23 +63,6 @@ namespace Hangfire.Atoms
 
             DashboardRoutes.Routes.AddRazorPage("/jobs/triggers", x => new TriggersPage());
             JobsSidebarMenu.Items.Add(TriggerJobSidebar.RenderMenu);
-        }
-
-        private static void ThrowIfStorageIsNotSupported()
-        {
-            if (JobStorage.Current == null) throw new InvalidOperationException("JobStorage.Current == null");
-
-            using var connection = JobStorage.Current.GetConnection();
-            var jsc = connection as JobStorageConnection;
-            if (jsc == null)
-                throw new InvalidOperationException(
-                    "JobStorage.Current.GetConnection() doesn't implement JobStorageConnection");
-
-            using var tr = connection.CreateWriteTransaction();
-            var jst = tr as JobStorageTransaction;
-            if (jst == null)
-                throw new InvalidOperationException(
-                    "JobStorage.Current.GetConnection().CreateWriteTransaction() doesn't implement JobStorageTransaction");
         }
     }
 }
