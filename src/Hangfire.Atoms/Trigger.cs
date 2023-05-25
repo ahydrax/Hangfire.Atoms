@@ -26,10 +26,9 @@ namespace Hangfire.Atoms
         }
 
         [PublicAPI]
-        public static void SetTrigger(this IBackgroundJobClient client, string triggerName)
+        public static void SetTrigger(this IBackgroundJobClientV2 client, string triggerName)
         {
-            var storage = JobStorage.Current;
-            using var connection = storage.GetJobStorageConnection();
+            using var connection = client.Storage.GetJobStorageConnection();
 
             SetTriggerInternal(client, connection, triggerName);
         }
