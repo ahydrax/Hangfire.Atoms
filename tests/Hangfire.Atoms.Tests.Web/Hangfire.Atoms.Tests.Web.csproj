@@ -8,8 +8,7 @@
   <ItemGroup>
     <PackageReference Include="HangFire" Version="1.7.32" />
     <PackageReference Include="Hangfire.Core" Version="1.7.32" />
-    <PackageReference Include="Hangfire.PostgreSql.ahydrax" Version="1.7.5" />
-    <PackageReference Include="Hangfire.Redis.StackExchange" Version="1.8.6" />
+    <PackageReference Include="Hangfire.InMemory" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
