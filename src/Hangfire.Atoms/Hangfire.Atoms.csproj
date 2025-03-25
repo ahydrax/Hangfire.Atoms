@@ -22,6 +22,7 @@
 
     <!-- Full MSBuild is required to generate Razor classes -->
     <PropertyGroup>
+		<RazorViewsCodeGenDirectory>$(MSBuildProjectDirectory)\</RazorViewsCodeGenDirectory>
         <MSBuild14FullPath>$(MSBuildProgramFiles32)\MSBuild\14.0\bin\MSBuild.exe</MSBuild14FullPath>
         <MSBuildCurrentFullPath>$(MSBuildBinPath)\MSBuild.exe</MSBuildCurrentFullPath>
         <RazorProjectFile>Razor.build</RazorProjectFile>
