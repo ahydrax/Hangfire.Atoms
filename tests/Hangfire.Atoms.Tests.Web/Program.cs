@@ -4,11 +4,9 @@ using Hangfire;
 using Hangfire.Atoms;
 using Hangfire.Atoms.Tests.Web;
 using Hangfire.MemoryStorage;
-using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = Environment.GetEnvironmentVariable("Hangfire_PostgreSql_ConnectionString");
 
 builder.Services.AddHangfire(configuration =>
 {
