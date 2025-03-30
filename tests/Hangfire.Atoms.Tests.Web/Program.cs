@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Hangfire;
 using Hangfire.Atoms;
 using Hangfire.Atoms.Tests.Web;
+using Hangfire.MemoryStorage;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Builder;
 
@@ -11,9 +12,7 @@ var connectionString = Environment.GetEnvironmentVariable("Hangfire_PostgreSql_C
 
 builder.Services.AddHangfire(configuration =>
 {
-    configuration.UsePostgreSqlStorage(connectionString);
-    configuration.UsePostgreSqlMetrics();
-    //configuration.UseRedisStorage("192.168.5.32");
+    configuration.UseMemoryStorage();
     configuration.UseAtoms();
 });
 
