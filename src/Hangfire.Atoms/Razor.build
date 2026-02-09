@@ -4,6 +4,6 @@
   <PropertyGroup>
     <RootNamespace>Hangfire.Atoms</RootNamespace>
     <GeneratePrettyNames>true</GeneratePrettyNames>
-    <RazorViewsCodeGenDirectory>$(MsBuildProjectDirectory)\</RazorViewsCodeGenDirectory>
+    <DisableLinePragmas>true</DisableLinePragmas>
   </PropertyGroup>
 </Project>
