@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
@@ -16,7 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Hangfire.Core" Version="[1.8,1.9)"/>
+        <PackageReference Include="Hangfire.Core" Version="[1.8.16,1.9)"/>
         <PackageReference Include="RazorGenerator.MsBuild" Version="2.5.0" PrivateAssets="All"/>
     </ItemGroup>
 
@@ -35,9 +35,6 @@
     </Target>
 
     <ItemGroup>
-        <Compile Update="Dashboard\Pages\AtomsDetailsPage.cshtml.cs">
-            <DependentUpon>AtomsDetailsPage.cshtml</DependentUpon>
-        </Compile>
         <Compile Update="Dashboard\Pages\AtomsDetailsPage.cs">
             <DependentUpon>AtomsDetailsPage.cshtml</DependentUpon>
         </Compile>
